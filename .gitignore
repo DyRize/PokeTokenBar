@@ -1,0 +1,9 @@
+node_modules/
+.agents/
+.impeccable/config.local.json
+.impeccable/review/
+.impeccable/cache/
+.impeccable/mocks/
+.hallmark/
+test-results/
+.DS_Store

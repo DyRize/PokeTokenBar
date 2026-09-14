@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PokeTokenBar — Your AI coding tokens, hatched into Pokémon</title>
+<title>PokeTokenBar — Your tokens. A little companion.</title>
 <meta name="description" content="A macOS menu-bar app that shows today's Claude Code, Codex, Gemini CLI, Antigravity, OpenCode, Hermes, Cursor, Grok, Copilot, Kiro, Pi Agent, omp & Aside token usage and turns it into a growing Pokémon companion. Hatch an egg, evolve it, graduate it into your Pokédex.">
 <link rel="icon" type="image/png" href="assets/icon.png">
 <link rel="apple-touch-icon" href="assets/icon.png">
@@ -16,1027 +16,119 @@
 <meta property="og:url" content="https://chattymin.github.io/PokeTokenBar/">
 <meta name="twitter:card" content="summary_large_image">
 
-<!-- Set theme before paint to avoid flash -->
+<link rel="preload" href="assets/fonts/bricolage-grotesque.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="styles.css">
 <script>
-  (function () {
-    try {
-      var t = localStorage.getItem('ptb-theme');
-      if (!t) t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', t);
-    } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
-  })();
+try { var savedTheme=localStorage.getItem('ptb-theme'); if(savedTheme==='dark'||savedTheme==='light') document.documentElement.dataset.theme=savedTheme; } catch (_) {}
 </script>
+</head><body>
 
-<style>
-  :root {
-    --bg:        #0d0e12;
-    --bg-soft:   #14161c;
-    --card:      #181b22;
-    --card-2:    #1d212a;
-    --border:    #272c37;
-    --fg:        #f4f5f7;
-    --muted:     #99a2b2;
-    --faint:     #6b7280;
-    --nav-bg:    rgba(13,14,18,0.72);
-    --code-bg:   #0a0b0e;
-    --shadow:    0 30px 80px rgba(0,0,0,0.55);
-    --red:       #e8402f;   /* Poké red — primary */
-    --red-2:     #b0241b;
-    --orange:    #f5a623;
-    --green:     #3fb950;
-    --blue:      #2d9cff;
-    --gold:      #f4c430;
-    --purple:    #a371f7;
-    --cyan:      #39c5cf;
-    --slate:     #8b98a5;
-    --radius:    16px;
-    --maxw:      1080px;
-  }
-  html[data-theme="light"] {
-    --bg:        #ffffff;
-    --bg-soft:   #f6f7f9;
-    --card:      #ffffff;
-    --card-2:    #f1f3f6;
-    --border:    #e5e8ee;
-    --fg:        #15171c;
-    --muted:     #586173;
-    --faint:     #8b94a3;
-    --nav-bg:    rgba(255,255,255,0.82);
-    --code-bg:   #0e1014;   /* keep code dark in light mode */
-    --shadow:    0 24px 60px rgba(20,30,60,0.14);
-  }
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background: var(--bg); color: var(--fg); line-height: 1.6;
-    -webkit-font-smoothing: antialiased; transition: background .25s, color .25s;
-  }
-  a { color: inherit; text-decoration: none; }
-  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
-  h1, h2, h3 { line-height: 1.18; letter-spacing: -0.02em; margin: 0; }
-  section { padding: 84px 0; }
-  .eyebrow {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-size: 0.8rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
-    color: var(--red); background: rgba(232,64,47,0.1);
-    border: 1px solid rgba(232,64,47,0.28); border-radius: 999px; padding: 6px 14px;
-  }
-  .muted { color: var(--muted); }
-
-  /* ---------- Nav ---------- */
-  nav {
-    position: sticky; top: 0; z-index: 50;
-    background: var(--nav-bg); backdrop-filter: saturate(160%) blur(12px);
-    border-bottom: 1px solid var(--border);
-  }
-  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 62px; gap: 14px; }
-  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; white-space: nowrap; }
-  .brand img { width: 28px; height: 28px; border-radius: 7px; }
-  .nav-mid { display: flex; align-items: center; gap: 26px; }
-  .nav-mid a { color: var(--muted); font-size: 0.92rem; font-weight: 500; transition: color .15s; }
-  .nav-mid a:hover { color: var(--fg); }
-  .nav-right { display: flex; align-items: center; gap: 10px; }
-
-  /* segmented language control + theme button */
-  .seg { display: inline-flex; background: var(--card-2); border: 1px solid var(--border); border-radius: 9px; padding: 2px; }
-  .seg button {
-    border: 0; background: transparent; color: var(--muted); cursor: pointer;
-    font-size: 0.82rem; font-weight: 600; padding: 5px 9px; border-radius: 7px; transition: all .15s;
-  }
-  .seg button:hover { color: var(--fg); }
-  .seg button.active { background: var(--red); color: #fff; }
-  .icon-btn {
-    width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--border); background: var(--card-2);
-    color: var(--fg); cursor: pointer; font-size: 1rem; display: grid; place-items: center; transition: all .15s;
-  }
-  .icon-btn:hover { border-color: var(--faint); }
-  .nav-cta {
-    color: var(--fg); border: 1px solid var(--border);
-    padding: 7px 15px; border-radius: 9px; background: var(--card); font-size: 0.9rem; font-weight: 600; white-space: nowrap;
-  }
-  .nav-cta:hover { border-color: var(--red); }
-
-  /* ---------- Buttons ---------- */
-  .btn {
-    display: inline-flex; align-items: center; gap: 9px;
-    font-weight: 600; font-size: 0.96rem; padding: 13px 22px; border-radius: 12px;
-    border: 1px solid transparent; cursor: pointer; transition: transform .12s, background .15s, border-color .15s;
-  }
-  .btn:active { transform: translateY(1px); }
-  .btn-primary { background: linear-gradient(180deg, var(--red), var(--red-2)); color: #fff; box-shadow: 0 8px 24px rgba(232,64,47,0.28); }
-  .btn-primary:hover { background: linear-gradient(180deg, #f24b3a, #c0291d); }
-  .btn-ghost { background: var(--card); color: var(--fg); border: 1px solid var(--border); }
-  .btn-ghost:hover { border-color: var(--faint); }
-
-  /* ---------- Hero ---------- */
-  .hero { position: relative; padding: 76px 0 64px; overflow: hidden; }
-  .hero::before {
-    content: ""; position: absolute; inset: 0;
-    background:
-      radial-gradient(620px 360px at 50% -8%, rgba(232,64,47,0.20), transparent 70%),
-      radial-gradient(500px 320px at 88% 18%, rgba(245,166,35,0.10), transparent 70%);
-    pointer-events: none;
-  }
-  .hero .wrap { position: relative; text-align: center; }
-  .hero h1 { font-size: clamp(2.1rem, 5.2vw, 3.6rem); margin: 22px auto 0; text-wrap: balance; }
-  /* 색깔 구절을 항상 다음 줄로 — 모든 언어에서 "흰색=1행 / 색깔=2행" 고정 */
-  .hero h1 .accent { display: block; background: linear-gradient(120deg, #ff6a5a, #f5a623); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  /* 한국어는 단어 중간에서 줄바꿈하지 않도록 (일본어는 문자 단위 기본 동작 유지) */
-  html:lang(ko) { word-break: keep-all; }
-  .hero p.lead { font-size: clamp(1.05rem, 2.2vw, 1.26rem); color: var(--muted); max-width: 60ch; margin: 20px auto 0; }
-  html:lang(ko) .hero p.lead, html:lang(ja) .hero p.lead { max-width: 42ch; }
-  .cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
-  .badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 26px; }
-  .badges img { height: 22px; }
-
-  .shot { margin-top: 54px; position: relative; display: inline-block; }
-  .shot .menubar {
-    position: absolute; top: -26px; left: 50%; transform: translateX(-50%);
-    width: 220px; border-radius: 10px; border: 1px solid var(--border);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.4); z-index: 2;
-  }
-  .window {
-    border: 1px solid var(--border); border-radius: 18px; overflow: hidden;
-    background: var(--card); box-shadow: var(--shadow); max-width: 420px;
-  }
-  .window .titlebar { display: flex; gap: 7px; padding: 11px 14px; background: var(--card-2); border-bottom: 1px solid var(--border); }
-  .window .titlebar i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
-  .dot-r { background: #ff5f57; } .dot-y { background: #febc2e; } .dot-g { background: #28c840; }
-  .window img { display: block; width: 100%; }
-
-  /* ---------- Works-with strip ---------- */
-  .strip { padding: 30px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg-soft); }
-  .strip .wrap { display: flex; align-items: center; justify-content: center; gap: 14px 30px; flex-wrap: wrap; }
-  .strip .label { color: var(--faint); font-size: 0.85rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
-  .chip { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 600; font-size: 0.98rem; }
-  .chip .d { width: 8px; height: 8px; border-radius: 50%; }
-
-  /* ---------- Section heads ---------- */
-  .sec-head { text-align: center; max-width: 62ch; margin: 0 auto 52px; }
-  .sec-head h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); }
-  .sec-head p { color: var(--muted); margin-top: 14px; font-size: 1.06rem; }
-
-  /* ---------- Features grid ---------- */
-  /* 카드 수가 3의 배수가 아니어도 마지막 줄이 가운데 정렬돼 '빈 칸'으로 보이지 않는다.
-     (grid 3열은 8개일 때 오른쪽에 구멍이 남고, 4열은 카드가 좁아져 본문이 깨진다.) */
-  .grid { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; }
-  .grid > .feat { flex: 1 1 300px; max-width: calc((100% - 36px) / 3); min-width: 280px; }
-  .feat { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 26px 24px; transition: border-color .15s, transform .15s; }
-  .feat:hover { border-color: var(--faint); transform: translateY(-3px); }
-  .feat .ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center;
-    font-size: 1.25rem; margin-bottom: 14px; background: rgba(255,255,255,.055);
-    border: 1px solid rgba(255,255,255,.07); }
-  .feat h3 { font-size: 1.12rem; }
-  .feat p { overflow-wrap: anywhere; word-break: keep-all; color: var(--muted); margin: 9px 0 0; font-size: 0.97rem; }
-
-  /* ---------- Companion ---------- */
-  .companion { background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-  .steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 50px; }
-  .step { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 22px 18px;
-    text-align: center; position: relative; display: flex; flex-direction: column; gap: 8px; }
-  .step p { margin-top: auto; }
-  .step .emoji { font-size: 2rem; }
-  .step h4 { margin: 12px 0 6px; font-size: 1.02rem; }
-  .step p { color: var(--muted); font-size: 0.9rem; margin: 0; }
-  .step .arrow { position: absolute; right: -13px; top: 50%; transform: translateY(-50%); color: var(--faint); font-size: 1.2rem; z-index: 2; }
-  /* 4칸 균등이면 어느 샷이 중요한지 알 수 없다 — 가로형은 폭을 다 쓰고, 세로형 둘은 나란히.
-     grid-auto-flow: dense 로 DOM 순서를 그대로 두고도 세로형이 빈칸을 메운다. */
-  .companion-shots { display: grid; grid-template-columns: 1fr 1fr; gap: 22px;
-    align-items: start; grid-auto-flow: dense; }
-  .companion-shots figure.wide { grid-column: 1 / -1; }
-  .companion-shots figure { margin: 0; }
-  .companion-shots img { width: 100%; border-radius: 14px; border: 1px solid var(--border); box-shadow: var(--shadow); }
-  .companion-shots figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 12px; text-align: center; }
-  .rarity-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 40px; }
-  .pill { font-size: 0.82rem; font-weight: 700; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--border); }
-
-  /* ---------- Install ---------- */
-  .install-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 22px; align-items: start; }
-  .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 26px; }
-  .panel h3 { font-size: 1.16rem; margin-bottom: 6px; }
-  .panel h3 .step-n { color: var(--red); font-variant-numeric: tabular-nums; }
-  .code {
-    position: relative; background: var(--code-bg); border: 1px solid var(--border); border-radius: 11px;
-    padding: 15px 52px 15px 16px; font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 0.9rem; color: #e6e9ef; overflow-x: auto; margin-top: 14px;
-  }
-  .code .tok-cmd { color: var(--green); }
-  .copy {
-    position: absolute; top: 9px; right: 9px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
-    color: #c7ccd6; border-radius: 8px; padding: 6px 9px; font-size: 0.78rem; cursor: pointer; transition: all .15s;
-  }
-  .copy:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
-  .copy.done { color: var(--green); border-color: var(--green); }
-  .req-list { list-style: none; padding: 0; margin: 0; }
-  /* 긴 서비스 목록도 이름 열 안에서 줄바꿈되어 설명 열을 밀어내거나 겹치지 않는다. */
-  .req-list li {
-    display: grid; grid-template-columns: minmax(96px, .95fr) minmax(0, 1.05fr);
-    gap: 11px; align-items: start; padding: 9px 0; border-bottom: 1px solid var(--border); color: var(--muted);
-  }
-  .req-list li:last-child { border-bottom: 0; }
-  .req-list .k, .req-list li > span:not(.k) { min-width: 0; overflow-wrap: anywhere; }
-  .req-list .k { color: var(--fg); font-weight: 600; }
-  .note { color: var(--faint); font-size: 0.86rem; margin-top: 14px; }
-
-  /* ---------- Footer ---------- */
-  footer { border-top: 1px solid var(--border); padding: 56px 0 44px; background: var(--bg-soft); }
-  .foot-top { display: flex; justify-content: space-between; gap: 30px; flex-wrap: wrap; }
-  .foot-links { display: flex; gap: 26px; flex-wrap: wrap; }
-  .foot-links a { color: var(--muted); font-size: 0.94rem; }
-  .foot-links a:hover { color: var(--fg); }
-  .disclaimer { color: var(--faint); font-size: 0.8rem; margin-top: 30px; max-width: 92ch; line-height: 1.65; }
-
-  /* ---------- Reveal ---------- */
-  .reveal { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s ease; }
-  .reveal.in { opacity: 1; transform: none; }
-  @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
-    .reveal { opacity: 1; transform: none; transition: none; }
-    body { transition: none; }
-  }
-
-  /* ---------- Guide (tabs) ---------- */
-  .tabbar { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; border-bottom: 1px solid var(--border); margin-bottom: 34px; }
-  .tabbar button {
-    appearance: none; background: transparent; border: none; color: var(--muted);
-    font: inherit; font-weight: 600; font-size: 0.96rem; padding: 12px 18px; cursor: pointer;
-    border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s, border-color .15s;
-  }
-  .tabbar button:hover { color: var(--fg); }
-  .tabbar button[aria-selected="true"] { color: var(--red); border-bottom-color: var(--red); }
-  .tabpanel { display: none; }
-  .tabpanel.active { display: block; animation: gfade .25s ease; }
-  @keyframes gfade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-  .gtable { border-collapse: collapse; width: 100%; margin: 14px 0 4px; font-size: 0.93rem; }
-  .gtable th, .gtable td { border: 1px solid var(--border); padding: 9px 12px; text-align: left; }
-  .gtable th { background: var(--card-2); font-weight: 600; }
-  .gtable .num { text-align: right; font-variant-numeric: tabular-nums; }
-  .calc { background: var(--bg-soft); border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-top: 18px; }
-  .calc .seg { flex-wrap: wrap; margin: 4px 8px 4px 0; }
-  .timeline { margin-top: 18px; }
-  .tl-row { display: grid; grid-template-columns: 22px 1fr auto; gap: 12px; align-items: baseline; padding: 9px 0; border-bottom: 1px dashed var(--border); }
-  .tl-row:last-child { border-bottom: none; }
-  .tl-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--red); align-self: center; }
-  .tl-dot.minor { background: var(--card-2); border: 2px solid var(--red); }
-  .tl-when { color: var(--red); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .states { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  .state-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
-  .state-card .emo { font-size: 1.9rem; }
-  .state-card .when { color: var(--red); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; display: block; margin-top: 6px; }
-  .state-card b { display: block; margin: 2px 0 4px; font-size: 1.02rem; }
-  .state-card p { color: var(--muted); font-size: 0.9rem; margin: 0; }
-  .gloop { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 16px; font-weight: 600; font-size: 1.05rem; }
-  .gloop .ga { color: var(--red); }
-
-  @media (max-width: 820px) { .states { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 600px) { .states { grid-template-columns: 1fr; } }
-
-  /* ---------- Responsive ---------- */
-  @media (max-width: 900px) {
-    .grid > .feat { max-width: calc((100% - 18px) / 2); }
-    .steps { grid-template-columns: 1fr 1fr; }
-    .step .arrow { display: none; }
-    .install-grid { grid-template-columns: 1fr; }
-    .nav-mid { display: none; }
-  }
-  @media (max-width: 600px) {
-    section { padding: 60px 0; }
-    .grid > .feat { max-width: 100%; }
-    .companion-shots { grid-template-columns: 1fr; }
-    .nav-cta { display: none; }
-    .brand span { display: none; }
-  }
-  @media (max-width: 420px) {
-    .req-list li { grid-template-columns: 1fr; gap: 2px; }
-  }
-
-
-  .specs { margin-top: 22px; display: flex; align-items: center; justify-content: center;
-    gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: .82rem; letter-spacing: .01em; }
-  .specs i { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: .45; }
-
-  /* 설치 경로는 하나가 주(主)여야 한다 — Homebrew 버튼이 유일한 시각적 CTA,
-     Releases 는 대안을 아는 사람만 찾아가는 보조 링크. */
-  .cta-alt { color: var(--muted); font-size: .9rem; text-decoration: none;
-    border-bottom: 1px solid transparent; transition: color .15s, border-color .15s; }
-  .cta-alt:hover { color: var(--fg); border-bottom-color: var(--faint); }
-  .cta-row { align-items: center; }
-</style>
-</head>
-<body>
-
-<!-- ===== Nav ===== -->
-<nav>
-  <div class="wrap">
-    <a class="brand" href="#top"><img src="assets/icon.png" alt="PokeTokenBar icon"><span>PokeTokenBar</span></a>
-    <div class="nav-mid">
-      <a href="#features" data-i18n="nav.features">Features</a>
-      <a href="#companion" data-i18n="nav.companion">Companion</a>
-      <a href="#guide" data-i18n="nav.guide">Guide</a>
-      <a href="#install" data-i18n="nav.install">Install</a>
-    </div>
-    <div class="nav-right">
-      <div class="seg" id="langSeg" role="group" aria-label="Language">
-        <button data-lang="en">EN</button>
-        <button data-lang="ko">한</button>
-        <button data-lang="ja">日</button>
-      </div>
-      <button class="icon-btn" id="themeBtn" aria-label="Toggle theme">☾</button>
-      <a class="nav-cta" href="https://github.com/chattymin/PokeTokenBar" target="_blank" rel="noopener">GitHub ↗</a>
-    </div>
-  </div>
-</nav>
-
-<!-- ===== Hero ===== -->
-<header class="hero" id="top">
-  <div class="wrap">
-    <span class="eyebrow" data-i18n="hero.eyebrow">macOS menu bar · free &amp; open source</span>
-    <h1><span data-i18n="hero.h1a">Your AI coding tokens,</span> <span class="accent" data-i18n="hero.h1b">hatched into Pokémon.</span></h1>
-    <p class="lead" data-i18n="hero.lead">Turn the tokens you're already burning into a Pokémon that hatches, evolves, and fills a Pokédex — with today's spend and official limits right underneath.</p>
-
-    <div class="cta-row">
-      <button class="btn btn-primary" data-copy="brew install --cask chattymin/tap/poke-token-bar">
-        <span data-i18n="hero.ctaInstall">⬇ Install with Homebrew</span>
-      </button>
-      <a class="cta-alt" href="https://github.com/chattymin/PokeTokenBar/releases" target="_blank" rel="noopener" data-i18n="hero.ctaDownload">Download from Releases ↗</a>
-    </div>
-
-    <p class="specs"><span>macOS 14+</span><i></i><span>Apple silicon &amp; Intel</span><i></i><span>Swift 6</span><i></i><span>MIT</span></p>
-
-    <div class="shot reveal">
-      <img class="menubar" src="assets/menubar.gif" alt="Menu bar showing an animated companion and today's total tokens">
-      <div class="window">
-        <div class="titlebar"><i class="dot-r"></i><i class="dot-y"></i><i class="dot-g"></i></div>
-        <img src="assets/screenshot-home.png" alt="PokeTokenBar popover with companion, daily usage trend, provider tabs and aligned remaining-limit percentages">
-      </div>
-    </div>
-  </div>
-</header>
-
-<!-- ===== Works with ===== -->
-<div class="strip">
-  <div class="wrap">
-    <span class="label" data-i18n="strip.label">Works with</span>
-    <span class="chip"><span class="d" style="background:var(--orange)"></span>Claude Code</span>
-    <span class="chip"><span class="d" style="background:var(--green)"></span>Codex</span>
-    <span class="chip"><span class="d" style="background:var(--blue)"></span>Gemini CLI</span>
-    <span class="chip"><span class="d" style="background:var(--blue)"></span>Antigravity</span>
-    <span class="chip"><span class="d" style="background:var(--purple)"></span>OpenCode</span>
-    <span class="chip"><span class="d" style="background:var(--cyan)"></span>Hermes Agent</span>
-    <span class="chip"><span class="d" style="background:var(--gold)"></span>Cursor</span>
-    <span class="chip"><span class="d" style="background:var(--slate)"></span>Grok CLI</span>
-    <span class="chip"><span class="d" style="background:var(--slate)"></span>Copilot CLI</span>
-    <span class="chip"><span class="d" style="background:var(--slate)"></span>Kiro CLI</span>
-    <span class="chip"><span class="d" style="background:var(--purple)"></span>Pi Agent</span>
-    <span class="chip"><span class="d" style="background:var(--purple)"></span>omp</span>
-    <span class="chip"><span class="d" style="background:var(--cyan)"></span>Aside</span>
-    <span class="chip"><span class="d" style="background:var(--red)"></span>PokéAPI</span>
-  </div>
-</div>
-
-<!-- ===== Features ===== -->
-<section id="features">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <h2 data-i18n="feat.h2">Everything you need, in the menu bar</h2>
-      <p data-i18n="feat.sub">A glanceable usage tracker for AI coding — no dashboard, no browser tab — with a reason to actually open it.</p>
-    </div>
-    <div class="grid">
-      <div class="feat reveal">
-        <div class="ic">📊</div>
-        <h3 data-i18n="f1.t">Live token usage</h3>
-        <p data-i18n="f1.d">Today's Claude Code + Codex + Gemini + Antigravity + OpenCode + Hermes + Cursor + Grok + Copilot + Kiro + Pi + omp + Aside tokens (compact, e.g. 253.4M) — combined total in the menu bar, per-service tabs in the popover.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="ic">🛑</div>
-        <h3 data-i18n="f2.t">Official limits</h3>
-        <p data-i18n="f2.d">Claude, Codex and Antigravity limits with reset countdowns and clock times. Choose used or remaining; percentages stay aligned with matching progress bars.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="ic">📈</div>
-        <h3 data-i18n="f3.t">Burn-rate forecast</h3>
-        <p data-i18n="f3.d">Projects when your current 5-hour window will hit 100% at the current spend rate — so a wall never surprises you.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="ic">🥚</div>
-        <h3 data-i18n="f4.t">Growth companion + Pokédex</h3>
-        <p data-i18n="f4.d">Your usage raises a Pokémon that hatches — sometimes, by a rare stroke of luck, Shiny ✨ — evolves through its real line with natures and little celebrations, and fills a Pokédex.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="ic">🌐</div>
-        <h3 data-i18n="f5.t">Localized</h3>
-        <p data-i18n="f5.d">Seven UI languages. Pokémon, type, ability and move names follow your selected language, with English when a translation is unavailable.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="ic">🔔</div>
-        <h3 data-i18n="f6.t">Notifications</h3>
-        <p data-i18n="f6.d">Alerts when a limit crosses your warning / critical thresholds — and when your companion hatches, evolves, or graduates.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="ic">🛒</div>
-        <h3 data-i18n="f7.t">Token Shop</h3>
-        <p data-i18n="f7.d">The tokens you've already used become spendable currency — buy Rare Candy to grow your Pokémon, a Mint to re-roll its nature, a Shiny Charm that permanently raises your shiny odds, or an egg to send off your companion and start fresh — plain, Uncommon-guaranteed, or Rare-guaranteed.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="ic">🐾</div>
-        <h3 data-i18n="f8.t">Floating desktop pet</h3>
-        <p data-i18n="f8.d">Let your companion live on the desktop instead of the menu bar — hover for today's usage, click to open the popover, right-click for a menu, drag to place it. Notifications can appear as a speech bubble above it.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="ic">📌</div>
-        <h3 data-i18n="f9.t">Representative Pokémon</h3>
-        <p data-i18n="f9.d">Pin any species you already own to the menu bar and floating pet, independently of the one you're raising — while pinned, the menu bar stops following egg, hatch, and evolution changes, and raising progress stays on Home.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="ic">📁</div>
-        <h3 data-i18n="f10.t">Additional scan folders</h3>
-        <p data-i18n="f10.d">Logs outside the built-in paths? Add extra scan roots per provider — comma or newline separated, * wildcards, with a live count of what currently matches. Each provider keeps its own list, and custom roots are added to the defaults rather than replacing them.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="ic">🔑</div>
-        <h3 data-i18n="f11.t">Official limits without the Keychain</h3>
-        <p data-i18n="f11.d">Cached limit token expired? Paste a claude.ai session key under Settings → Advanced and official Claude limits come straight from claude.ai — no Keychain access, no password pop-up, and auto-polling keeps them fresh.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="ic">🧮</div>
-        <h3 data-i18n="f12.t">Per-model breakdown</h3>
-        <p data-i18n="f12.d">Pi usage follows the model recorded for each turn. The popover breaks today&#x27;s Pi tokens down by model, biggest first.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="ic">📊</div>
-        <h3 data-i18n="f13.t">This month, day by day</h3>
-        <p data-i18n="f13.d">See this month’s daily token totals across all tools in the popover. Hover a bar for that day’s usage.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="ic">🥚</div>
-        <h3 data-i18n="f14.t">Growth at your pace</h3>
-        <p data-i18n="f14.d">Set difficulty from 10% to 200% and apply it with Save. Your earned progress is preserved. Hatches from a previously graduated base species grow twice as fast.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="ic">📖</div>
-        <h3 data-i18n="f15.t">Individual Pokémon profiles</h3>
-        <p data-i18n="f15.d">Explore persistent individual values, abilities and moves in Pokémon details. Localized names appear without a brief English flash.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== Companion ===== -->
-<section id="companion" class="companion">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow" data-i18n="comp.eyebrow">The companion</span>
-      <h2 style="margin-top:16px" data-i18n="comp.h2">Code more, raise a Pokémon</h2>
-      <p data-i18n="comp.sub">Tokens spent since install grow a Pokémon through its real evolution tree — fetched live from PokéAPI, animated with Gen-V sprites.</p>
-    </div>
-
-    <div class="steps">
-      <div class="step reveal"><div class="emoji">🥚</div><h4 data-i18n="s1.t">Hatch</h4><p data-i18n="s1.d">Spend ~5M tokens and your egg hatches into a rarity-weighted Pokémon — one of 25 natures, and once in a rare while, Shiny ✨.</p><span class="arrow">→</span></div>
-      <div class="step reveal"><div class="emoji">✨</div><h4 data-i18n="s2.t">Evolve</h4><p data-i18n="s2.d">Keep coding to evolve it through its 1 / 2 / 3-stage line, branches included.</p><span class="arrow">→</span></div>
-      <div class="step reveal"><div class="emoji">🎓</div><h4 data-i18n="s3.t">Graduate</h4><p data-i18n="s3.d">Reach the final form + threshold and it graduates — a fresh egg arrives.</p><span class="arrow">→</span></div>
-      <div class="step reveal"><div class="emoji">📖</div><h4 data-i18n="s4.t">Collect</h4><p data-i18n="s4.d">Every species you've owned folds into one Pokédex cell — and the catch log keeps each individual.</p><span class="arrow">→</span></div>
-      <div class="step reveal"><div class="emoji">🍬</div><h4 data-i18n="s5.t">Rare Candy</h4><p data-i18n="s5.d">Max out a 5-hour or weekly limit and you earn Rare Candy — spend it from the Bag to grow your current Pokémon.</p></div>
-    </div>
-
-    <div class="companion-shots">
-      <figure class="reveal">
-        <img src="assets/screenshot-collection-pokedex.png" alt="Pokédex view: one cell per species owned, in dex-number order">
-        <figcaption data-i18n="cap1">Pokédex — one cell per species you've owned, in dex-number order, ✨ on the shinies.</figcaption>
-      </figure>
-      <figure class="reveal wide">
-        <img src="assets/shiny-banner.gif" alt="Normal Lapras next to its shiny purple variant, both animated">
-        <figcaption data-i18n="cap2">Once in a rare while, an egg hatches Shiny ✨ — distinct colors, kept through every evolution.</figcaption>
-      </figure>
-      <figure class="reveal">
-        <img src="assets/screenshot-bag.png" alt="Bag tab showing a Rare Candy item earned from filling a usage limit">
-        <figcaption data-i18n="cap3">Fill a usage limit and earn Rare Candy — spend it from the Bag to grow your Pokémon.</figcaption>
-      </figure>
-      <figure class="reveal wide">
-        <img src="assets/floating-pet.gif" alt="The floating desktop pet with a hover callout showing today's tokens and a right-click menu">
-        <figcaption data-i18n="cap4">Move the pet onto your desktop — hover for today's usage, right-click for a menu, drag it anywhere.</figcaption>
-      </figure>
-      <figure class="reveal">
-        <img src="assets/screenshot-daily-trend.png" alt="This month’s daily usage, with every date kept in place." loading="lazy">
-        <figcaption data-i18n="cap5">This month’s daily usage, with every date kept in place.</figcaption>
-      </figure>
-      <figure class="reveal">
-        <img src="assets/screenshot-difficulty.png" alt="Save difficulty changes while keeping earned progress." loading="lazy">
-        <figcaption data-i18n="cap6">Save difficulty changes while keeping earned progress.</figcaption>
-      </figure>
-      <figure class="reveal">
-        <img src="assets/screenshot-pokemon-profile.png" alt="Inspect each Pokémon’s individual values, ability and moves." loading="lazy">
-        <figcaption data-i18n="cap7">Inspect each Pokémon’s individual values, ability and moves.</figcaption>
-      </figure>
-      <figure class="reveal">
-        <img src="assets/screenshot-quota-alignment.png" alt="Reset timing stays beside percentages aligned at the right edge." loading="lazy">
-        <figcaption data-i18n="cap8">Reset timing stays beside percentages aligned at the right edge.</figcaption>
-      </figure>
-    </div>
-
-    <div class="rarity-row reveal">
-      <span class="pill" style="color:var(--muted);border-color:var(--border)" data-i18n="rar.common">Common · hatches often</span>
-      <span class="pill" style="color:var(--green);border-color:rgba(63,185,80,0.4)" data-i18n="rar.uncommon">Uncommon</span>
-      <span class="pill" style="color:var(--blue);border-color:rgba(45,156,255,0.4)" data-i18n="rar.rare">Rare</span>
-      <span class="pill" style="color:var(--gold);border-color:rgba(244,196,48,0.45)" data-i18n="rar.legendary">Legendary · rarely</span>
-    </div>
-    <p class="muted" style="text-align:center;margin-top:18px;font-size:0.92rem" data-i18n="rar.note">Rarer Pokémon take more tokens to graduate — roughly 3 days (common) to 24 days (legendary) at heavy use.</p>
-  </div>
-</section>
-
-<!-- ===== Guide (tabs) ===== -->
-<section id="guide">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow" data-i18n="g.eyebrow">Field guide</span>
-      <h2 style="margin-top:16px" data-i18n="g.h2">How it grows — all the numbers</h2>
-      <p data-i18n="g.sub">How long it takes, what you'll see along the way, and what there is to collect — before you install.</p>
-    </div>
-
-    <div class="tabbar reveal" role="tablist">
-      <button role="tab" aria-selected="true" data-gtab="growth"><span data-i18n="g.t1">🐣 Growth &amp; costs</span></button>
-      <button role="tab" aria-selected="false" data-gtab="daily"><span data-i18n="g.t2">🎭 A day together</span></button>
-      <button role="tab" aria-selected="false" data-gtab="collect"><span data-i18n="g.t3">📕 Collection</span></button>
-    </div>
-
+<a data-i18n="skip" class="skip" href="#main">Skip to content</a>
+<header class="site-header"><div class="wrap header-row">
+<a class="brand" href="#top"><img src="assets/icon.png" alt="" width="32" height="32"><span>PokeTokenBar</span></a>
+<nav class="nav-links" id="site-nav" data-i18n-aria="aria.nav" aria-label="Main navigation"><a data-i18n="nav.features" href="#features">The app</a><a data-i18n="nav.guide" href="#guide">Field guide</a><a data-i18n="nav.install" href="#install">Install</a></nav>
+<div class="header-tools js-only">
+<select class="language" id="language" aria-label="Language"><option value="en" lang="en">English</option><option value="ko" lang="ko">한국어</option><option value="ja" lang="ja">日本語</option></select>
+<button class="icon-btn" id="themeBtn" aria-label="Switch color theme" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13a8 8 0 0 1-9-9 8 8 0 1 0 9 9Z"/></svg></button>
+<button class="icon-btn menu-toggle" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="site-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+</div></div></header>
+<main id="main">
+<section class="hero" id="top"><div class="wrap hero-grid">
+<div class="hero-copy"><h1><span data-i18n="hero.h1a" >Your tokens.</span><span data-i18n="hero.h1b" class="accent">A little companion.</span></h1>
+<p data-i18n="hero.lead" class="hero-lead">A Pokémon that grows as you code. Track your AI token usage and limits, right from your Mac’s menu bar.</p>
+<div class="hero-actions"><a class="btn btn-primary" href="#install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 17v4h14v-4"/></svg><span data-i18n="hero.install" >Get PokeTokenBar</span></a><a data-i18n="hero.preview" class="text-link" href="#features">Meet the app</a></div>
+<p data-i18n="hero.compat" class="compat">Free · macOS 14+ · Apple Silicon &amp; Intel</p>
+<div class="hero-note"><span class="rule" aria-hidden="true"></span><p data-i18n="hero.note" >The tokens you already use become progress. Your usual workflow, with a little company.</p></div></div>
+<figure class="product-stage"><div class="product-image"><img src="assets/screenshot-home.png" width="720" height="1134" fetchpriority="high" data-i18n-alt="alt.home" alt="Example PokeTokenBar screen with Lapras, daily tokens and official limits"></div><figcaption><span data-i18n="demo.caption" >Your menu bar, with company.</span><span data-i18n="demo.provenance" >Example screen · English</span></figcaption></figure>
+</div></section>
+<section class="section install" id="install"><div class="wrap install-layout">
+<div class="install-intro"><h2 data-i18n="install.title" >Make room for<br>a little company.</h2><p data-i18n="install.intro" >You’ll need macOS 14 or later and at least one supported AI coding tool. No PokeTokenBar account needed.</p><a class="text-link" href="https://github.com/chattymin/PokeTokenBar/releases/latest" target="_blank" rel="noopener"><span data-i18n="footer.releases" >Release notes</span></a></div>
+<div><h3 data-i18n="install.homebrew" >Install with Homebrew</h3><ol class="install-steps"><li data-i18n="install.step1" >Open Terminal on your Mac.</li><li data-i18n="install.step2" >Copy and run the command below.</li><li data-i18n="install.step3" >Open PokeTokenBar from Applications.</li></ol>
+<div class="command-box"><code id="install-command">brew install --cask chattymin/tap/poke-token-bar</code><button class="copy js-only" data-copy="brew install --cask chattymin/tap/poke-token-bar"><span data-i18n="copy" >Copy command</span></button></div><p class="copy-status" id="copy-status" role="status" aria-live="polite"></p><a class="text-link" href="https://brew.sh/" target="_blank" rel="noopener"><span data-i18n="install.brewhelp" >Need Homebrew?</span></a>
+<details class="install-more"><summary><span data-i18n="install.direct" >Prefer a direct download?</span></summary><div class="details-body"><a class="btn btn-secondary" href="https://github.com/chattymin/PokeTokenBar/releases/latest/download/PokeTokenBar.zip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 17v4h14v-4"/></svg><span data-i18n="install.zip" >Download ZIP for macOS</span></a><p data-i18n="install.unzip" >Unzip PokeTokenBar.zip and move PokeTokenBar.app into Applications.</p><p data-i18n="install.gate" >The app is self-signed. If macOS blocks the first launch, follow the Gatekeeper steps in the installation guide. Homebrew handles the quarantine attribute for you.</p><a class="text-link" href="https://github.com/chattymin/PokeTokenBar#install" target="_blank" rel="noopener"><span data-i18n="install.help" >Open installation guide</span></a></div></details>
+</div></div></section>
+<section class="section" id="features"><div class="wrap">
+<div class="feature-story"><div class="feature-copy"><h2 data-i18n="usage.title" >Less checking.<br>More coding.</h2><p data-i18n="usage.desc" >Today’s tokens, usage trends and provider limits live together. Open the menu bar when you need the details; keep working when you don’t.</p><h3 data-i18n="usage.limits" >See the reset coming</h3><p data-i18n="usage.limitsDesc" >Official limits for Claude, Codex and Antigravity, with reset timing and optional notifications.</p></div>
+<figure class="feature-media"><img src="assets/screenshot-daily-trend.png" width="720" height="355" loading="lazy" data-i18n-alt="alt.trend" alt="Example daily token usage chart"><img src="assets/screenshot-quota-alignment.png" width="720" height="300" loading="lazy" data-i18n-alt="alt.quota" alt="Example provider limits and reset timing"><figcaption data-i18n="usage.caption" >Daily trends and official usage limits. Example screens.</figcaption></figure></div>
+<details class="all-features"><summary><span data-i18n="features.more" >Explore the details</span></summary><div class="feature-list"><article><h3 data-i18n="s5.t">Earn Rare Candy</h3><p data-i18n="s5.d">Fill a 5-hour or weekly limit to earn Rare Candy. Use it from the Bag to grow your partner.</p></article><article><h3 data-i18n="f1.t" >Live token usage</h3><p data-i18n="f1.d" >See the total from your supported tools in the menu bar. Open the popover for a breakdown by provider.</p></article><article><h3 data-i18n="f2.t" >Official limits</h3><p data-i18n="f2.d" >Claude, Codex and Antigravity limits with reset countdowns and clock times. Choose used or remaining; percentages stay aligned with matching progress bars.</p></article><article><h3 data-i18n="f3.t" >Burn-rate forecast</h3><p data-i18n="f3.d" >Estimate when your current 5-hour window will reach 100%, based on your current usage rate.</p></article><article><h3 data-i18n="f5.t" >Localized</h3><p data-i18n="f5.d" >Seven UI languages. Pokémon, type, ability and move names follow your selected language, with English when a translation is unavailable.</p></article><article><h3 data-i18n="f6.t" >Notifications</h3><p data-i18n="f6.d" >Choose alerts for approaching usage limits, hatching, evolution and graduation.</p></article><article><h3 data-i18n="f7.t" >Token Shop</h3><p data-i18n="f7.d" >Spend previously used tokens on Rare Candy, nature-changing Mints, a Shiny Charm or a new egg. Some eggs guarantee an Uncommon or Rare partner.</p></article><article><h3 data-i18n="f9.t" >Representative Pokémon</h3><p data-i18n="f9.d" >Pin an owned species to the menu bar and desktop pet. Your current partner keeps growing in Home.</p></article><article><h3 data-i18n="f10.t" >Additional scan folders</h3><p data-i18n="f10.d" >Add per-provider scan folders when your logs live outside the default locations. Wildcards and a live match count help you find them.</p></article><article><h3 data-i18n="f11.t" >Official limits without the Keychain</h3><p data-i18n="f11.d" >Use a claude.ai session key in Settings → Advanced to read official Claude limits without Keychain prompts.</p></article><article><h3 data-i18n="f12.t" >Per-model breakdown</h3><p data-i18n="f12.d" >Pi usage follows the model recorded for each turn. The popover breaks today&#x27;s Pi tokens down by model, biggest first.</p></article><article><h3 data-i18n="f13.t" >This month, day by day</h3><p data-i18n="f13.d" >See this month’s daily token totals across all tools in the popover. Hover a bar for that day’s usage.</p></article><article><h3 data-i18n="f14.t" >Growth at your pace</h3><p data-i18n="f14.d" >Set difficulty from 10% to 200% and apply it with Save. Your earned progress is preserved. Hatches from a previously graduated base species grow twice as fast.</p></article><article><h3 data-i18n="f15.t" >Individual Pokémon profiles</h3><p data-i18n="f15.d" >Explore persistent individual values, abilities and moves in Pokémon details. Localized names appear without a brief English flash.</p></article></div></details>
+</div></section>
+<section class="section companion" id="companion"><div class="wrap">
+<div class="companion-layout"><div><h2 data-i18n="comp.title" >A workday,<br>with a side quest.</h2><p data-i18n="comp.desc" class="muted" style="margin-top:var(--space-md)">Your existing token usage raises a partner through its real evolution line. Then a new egg arrives, and the collection grows.</p><ol class="journey"><li><div><h3 data-i18n="journey.hatch" >Hatch your first partner</h3><p data-i18n="journey.hatchDesc" >An egg hatches after 5M tokens at the default difficulty. Which Pokémon will it be?</p></div></li><li><div><h3 data-i18n="journey.grow" >Watch it grow</h3><p data-i18n="journey.growDesc" >Keep coding to evolve. Adjust difficulty to suit your own pace.</p></div></li><li><div><h3 data-i18n="journey.collect" >Keep the memories</h3><p data-i18n="journey.collectDesc" >Graduated partners stay in your collection. A fresh egg starts the next chapter.</p></div></li></ol></div>
+<figure class="collection-figure"><img src="assets/screenshot-collection-pokedex.png" width="686" height="1066" loading="lazy" data-i18n-alt="alt.collection" alt="Example Pokédex showing collected species"><figcaption data-i18n="comp.caption" >Every partner has a place in your Pokédex. Example screen.</figcaption></figure></div>
+<div class="pet-story"><figure><img id="pet-demo" src="assets/floating-pet-still.png" width="880" height="452" loading="lazy" data-i18n-alt="alt.pet" alt="Example floating desktop pet with usage callout"><figcaption data-i18n="demo.provenance">Example screen · English</figcaption><button id="demoBtn" class="btn btn-secondary demo-control js-only" aria-controls="pet-demo" aria-pressed="false"><span data-i18n="demo.play">Play demo</span></button></figure><div><h3 data-i18n="pet.title" >Or, right beside you.</h3><p data-i18n="pet.desc" >Let your partner out of the menu bar. Drag it anywhere, hover to check usage, and click to open the app.</p></div></div>
+</div></section>
+<section class="section" id="guide"><div class="wrap"><div class="guide-summary"><div><h2 data-i18n="guide.title" >Curious how it grows?</h2><p data-i18n="guide.desc" >Try your pace, check the costs, and see what you can collect. Too many tokens? Lower the difficulty in the app to grow with fewer tokens.</p></div></div>
+<div class="guide-body">
+<div class="guide-tabs js-only" role="tablist" data-i18n-aria="aria.guide" aria-label="Field guide"><button role="tab" id="tab-growth" aria-controls="gtab-growth" aria-selected="true" tabindex="0" data-gtab="growth"><span data-i18n="g.t1" >Growth calculator</span></button><button role="tab" id="tab-daily" aria-controls="gtab-daily" aria-selected="false" tabindex="-1" data-gtab="daily"><span data-i18n="g.t2" >A day together</span></button><button role="tab" id="tab-collect" aria-controls="gtab-collect" aria-selected="false" tabindex="-1" data-gtab="collect"><span data-i18n="g.t3" >Collection</span></button></div>
     <div class="tabpanel active" id="gtab-growth">
       <div class="panel">
         <h3 data-i18n="g.costH">Tokens per evolution</h3>
-        <p class="muted" style="margin:6px 0 0;font-size:0.95rem" data-i18n="g.costSub">The rarer the Pokémon, the longer it stays with you. These are base costs at 100% difficulty; repeat hatches receive 2× growth.</p>
-        <table class="gtable">
+        <p class="muted" data-i18n="g.costSub">A three-form example at 100% difficulty, without the repeat-species bonus or items. The table excludes the 5M-token hatch; the calculator includes it. One- and two-form lines split the same total differently.</p>
+        <div class="table-scroll" tabindex="0" role="region" data-i18n-aria="aria.table" aria-label="Growth and collection details"><table class="gtable">
           <tr><th data-i18n="g.thRarity">Rarity</th><th class="num" data-i18n="g.thS1">Stage 1</th><th class="num" data-i18n="g.thS2">Stage 2</th><th class="num" data-i18n="g.thS3">Stage 3 (graduate)</th><th class="num" data-i18n="g.thTotal">Total</th></tr>
-          <tr><td><span class="pill" style="color:var(--muted)">Common</span></td><td class="num">125M</td><td class="num">250M</td><td class="num">375M</td><td class="num">750M</td></tr>
-          <tr><td><span class="pill" style="color:var(--green);border-color:rgba(63,185,80,0.4)">Uncommon</span></td><td class="num">312.5M</td><td class="num">625M</td><td class="num">937.5M</td><td class="num">1.875B</td></tr>
-          <tr><td><span class="pill" style="color:var(--blue);border-color:rgba(45,156,255,0.4)">Rare</span></td><td class="num">500M</td><td class="num">1B</td><td class="num">1.5B</td><td class="num">3B</td></tr>
-          <tr><td><span class="pill" style="color:var(--gold);border-color:rgba(244,196,48,0.45)">Legendary</span></td><td class="num">1B</td><td class="num">2B</td><td class="num">3B</td><td class="num">6B</td></tr>
-        </table>
+          <tr><td>Common</td><td class="num">125M</td><td class="num">250M</td><td class="num">375M</td><td class="num">750M</td></tr>
+          <tr><td>Uncommon</td><td class="num">312.5M</td><td class="num">625M</td><td class="num">937.5M</td><td class="num">1.875B</td></tr>
+          <tr><td>Rare</td><td class="num">500M</td><td class="num">1B</td><td class="num">1.5B</td><td class="num">3B</td></tr>
+          <tr><td>Legendary</td><td class="num">1B</td><td class="num">2B</td><td class="num">3B</td><td class="num">6B</td></tr>
+        </table></div>
 
-        <div class="calc">
-          <b data-i18n="g.calcH">How long on my pace?</b>
-          <p class="muted" style="margin:4px 0 10px;font-size:0.9rem" data-i18n="g.calcQ">How many AI-coding tokens do you burn per day? (total, including cache reads)</p>
-          <span class="seg" id="gPace">
-            <button data-v="10"><span data-i18n="g.p1">Light · 10M/day</span></button>
-            <button data-v="40" class="active"><span data-i18n="g.p2">Steady · 40M/day</span></button>
-            <button data-v="120"><span data-i18n="g.p3">Heavy · 120M/day</span></button>
-            <button data-v="300"><span data-i18n="g.p4">Agent fleet · 300M/day</span></button>
-          </span>
-          <span class="seg" id="gRarity">
-            <button data-v="common" class="active">Common</button>
-            <button data-v="uncommon">Uncommon</button>
-            <button data-v="rare">Rare</button>
-            <button data-v="legendary">Legendary</button>
-          </span>
-          <div class="timeline" id="gTimeline"></div>
-        </div>
-        <p class="note" data-i18n="g.honest">Every number on this page is hard-coded in the app. No server, no purchases, no shortcuts — just code.</p>
+<div class="calc">
+<h3 data-i18n="g.calcH" >How long on my pace?</h3><p data-i18n="g.calcQ" >How many AI-coding tokens do you burn per day? (total, including cache reads)</p>
+<div class="calc-controls js-only">
+<label><span data-i18n="calc.pace" >Daily tokens</span><select id="gPace"><option value="10" data-i18n="g.p1" >Light · 10M/day</option><option value="40" data-i18n="g.p2" selected>Steady · 40M/day</option><option value="120" data-i18n="g.p3" >Heavy · 120M/day</option><option value="300" data-i18n="g.p4" >Agent fleet · 300M/day</option></select></label>
+<label><span data-i18n="calc.rarity" >Rarity</span><select id="gRarity"><option value="common">Common</option><option value="uncommon">Uncommon</option><option value="rare">Rare</option><option value="legendary">Legendary</option></select></label>
+</div><div class="timeline" id="gTimeline" role="status" aria-live="polite"></div><noscript><p data-i18n="calc.nojs" >Enable JavaScript to use the calculator. The token costs are listed above.</p></noscript></div>
+        <p class="note" data-i18n="g.honest">Estimates assume a constant daily pace. Difficulty, items and the 2× post-hatch bonus for previously graduated species change the result.</p>
       </div>
     </div>
 
     <div class="tabpanel" id="gtab-daily">
-      <p class="muted" style="text-align:center;max-width:56ch;margin:0 auto 22px" data-i18n="g.dailyIntro">The companion in your menu bar isn't a decoration — it lives your coding rhythm, switching sprites and captions in real time.</p>
+      <p class="muted" data-i18n="g.dailyIntro">Your companion responds to your coding rhythm, changing its pose and caption as you work.</p>
       <div class="states">
-        <div class="state-card"><span class="emo">💤</span><span class="when" data-i18n="g.st1w">no tokens today</span><b data-i18n="g.st1t">Fast asleep</b><p data-i18n="g.st1d">When you rest, it rests. Weekend menu bars are quiet.</p></div>
-        <div class="state-card"><span class="emo">🧍</span><span class="when" data-i18n="g.st2w">light use</span><b data-i18n="g.st2t">Loafing around</b><p data-i18n="g.st2d">A few questions here and there — it idles beside you.</p></div>
-        <div class="state-card"><span class="emo">🚶</span><span class="when" data-i18n="g.st3w">coding steadily</span><b data-i18n="g.st3t">Working along</b><p data-i18n="g.st3d">Your normal pace. It keeps busy too.</p></div>
-        <div class="state-card"><span class="emo">🔥</span><span class="when" data-i18n="g.st4w">100k+ tokens/min</span><b data-i18n="g.st4t">In the zone</b><p data-i18n="g.st4d">Agents running hot — so is your partner.</p></div>
-        <div class="state-card"><span class="emo">😮‍💨</span><span class="when" data-i18n="g.st5w">limit almost reached</span><b data-i18n="g.st5t">Worn out</b><p data-i18n="g.st5d">When a usage limit is close, it tires before you do. Take the hint.</p></div>
-        <div class="state-card"><span class="emo">🎉</span><span class="when" data-i18n="g.st6w">evolution · graduation</span><b data-i18n="g.st6t">Celebrating</b><p data-i18n="g.st6d">Evolution moments and a graduation send-off — a few seconds worth catching.</p></div>
+        <div class="state-card"><span class="when" data-i18n="g.st1w">no tokens today</span><b data-i18n="g.st1t">Fast asleep</b><p data-i18n="g.st1d">When you rest, it rests. Weekend menu bars are quiet.</p></div>
+        <div class="state-card"><span class="when" data-i18n="g.st2w">light use</span><b data-i18n="g.st2t">Loafing around</b><p data-i18n="g.st2d">On lighter days, your partner idles beside you.</p></div>
+        <div class="state-card"><span class="when" data-i18n="g.st3w">coding steadily</span><b data-i18n="g.st3t">Working along</b><p data-i18n="g.st3d">Your normal pace. It keeps busy too.</p></div>
+        <div class="state-card"><span class="when" data-i18n="g.st4w">100k+ tokens/min</span><b data-i18n="g.st4t">In the zone</b><p data-i18n="g.st4d">When your agents are busy, your partner keeps up.</p></div>
+        <div class="state-card"><span class="when" data-i18n="g.st5w">limit almost reached</span><b data-i18n="g.st5t">Worn out</b><p data-i18n="g.st5d">When a usage limit is close, it tires before you do. Take the hint.</p></div>
+        <div class="state-card"><span class="when" data-i18n="g.st6w">evolution · graduation</span><b data-i18n="g.st6t">Celebrating</b><p data-i18n="g.st6d">A short animation marks each evolution and graduation.</p></div>
       </div>
-      <p class="note" style="text-align:center" data-i18n="g.dailyNote">Hatching has its own animation — and a Shiny hatch announces itself.</p>
+      <p class="note" data-i18n="g.dailyNote">Hatching has its own animation. A Shiny hatch gets a different entrance.</p>
     </div>
 
     <div class="tabpanel" id="gtab-collect">
       <div class="panel">
-        <div class="gloop"><span>🥚</span><span class="ga">→</span><span>🐣</span><span class="ga">→</span><span>⚡️</span><span class="ga">→</span><span>🎓</span><span class="ga">→</span><span>🥚</span></div>
-        <p class="muted" style="text-align:center;margin:0 0 8px" data-i18n="g.loop">Not an ending — a loop. Every graduation fills a Pokédex slot and a new egg arrives.</p>
-        <table class="gtable">
+
+        <p class="muted" data-i18n="g.loop">Every graduation adds to your collection and brings a new egg.</p>
+        <div class="table-scroll" tabindex="0" role="region" data-i18n-aria="aria.table" aria-label="Growth and collection details"><table class="gtable">
           <tr><th data-i18n="g.cWhat">To collect</th><th data-i18n="g.cHow">How it works</th></tr>
-          <tr><td><b data-i18n="g.c1k">Species</b></td><td data-i18n="g.c1v">329 from Generations I–V — every hatch is random. You won't know until it cracks.</td></tr>
-          <tr><td><b data-i18n="g.c2k">Rarities</b></td><td data-i18n="g.c2v">Four tiers, Common to Legendary — the rare ones hatch rarely and stay longest.</td></tr>
-          <tr><td><b data-i18n="g.c3k">✨ Shiny</b></td><td data-i18n="g.c3v">A rare stroke of luck at hatch — distinct colors, kept through every evolution.</td></tr>
-          <tr><td><b data-i18n="g.c4k">Natures</b></td><td data-i18n="g.c4v">One of 25 per hatch — the same species never feels quite the same.</td></tr>
-          <tr><td><b data-i18n="g.c5k">Branches</b></td><td data-i18n="g.c5v">Branching lines prefer a branch you haven't collected — the Pokédex fills itself as you keep raising.</td></tr>
-          <tr><td><b data-i18n="g.c6k">Pokédex</b></td><td data-i18n="g.c6v">Recorded as (starter → final form) pairs with the full line — same starter, different branch, different entry.</td></tr>
-        </table>
+          <tr><td><b data-i18n="g.c1k">Species</b></td><td data-i18n="g.c1v">Pokémon from Generations I–V, drawn from the app’s live species pool. Each hatch is a surprise.</td></tr>
+          <tr><td><b data-i18n="g.c2k">Rarities</b></td><td data-i18n="g.c2v">Four tiers, Common to Legendary. Rarer partners hatch less often and need more tokens to graduate.</td></tr>
+          <tr><td><b data-i18n="g.c3k">✨ Shiny</b></td><td data-i18n="g.c3v">A rare surprise at hatch: different colors that stay through evolution.</td></tr>
+          <tr><td><b data-i18n="g.c4k">Natures</b></td><td data-i18n="g.c4v">One of 25 natures per hatch gives each partner its character.</td></tr>
+          <tr><td><b data-i18n="g.c5k">Branches</b></td><td data-i18n="g.c5v">Branching evolution lines prefer paths you have not collected yet.</td></tr>
+          <tr><td><b data-i18n="g.c6k">Pokédex</b></td><td data-i18n="g.c6v">The catch log records individual partners and their evolution lines. The Pokédex groups the species you have owned.</td></tr>
+        </table></div>
       </div>
     </div>
-  </div>
-</section>
 
-
-<!-- ===== Install ===== -->
-<section id="install">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <h2 data-i18n="inst.h2">Install in a minute</h2>
-      <p data-i18n="inst.sub">macOS 14+ (Apple Silicon or Intel). The Homebrew cask handles everything.</p>
-    </div>
-
-    <div class="install-grid">
-      <div class="panel reveal">
-        <h3 data-i18n="inst.s2t">Install PokeTokenBar</h3>
-        <p class="muted" style="margin:6px 0 0;font-size:0.95rem" data-i18n="inst.s2d">One Homebrew command — ad-hoc/self-signed; the cask strips the quarantine attribute on install.</p>
-        <div class="code"><span class="tok-cmd">brew</span> install --cask chattymin/tap/poke-token-bar<button class="copy" data-copy="brew install --cask chattymin/tap/poke-token-bar" data-i18n="copy">Copy</button></div>
-
-        <p class="note" data-i18n-html="inst.note">Prefer building yourself? <code>swift build</code> · <code>swift test</code> · <code>./scripts/build-app.sh</code> → <code>/Applications</code>. See the <a href="https://github.com/chattymin/PokeTokenBar#install" target="_blank" rel="noopener" style="color:var(--blue)">README</a>.</p>
-
-        <p class="note" data-i18n-html="inst.gatekeeper">Downloading directly instead? It's ad-hoc/self-signed, so on first launch right-click <code>PokeTokenBar.app</code> → <strong>Open</strong>, or run <code>xattr -dr com.apple.quarantine /Applications/PokeTokenBar.app</code>. (Homebrew does this for you.)</p>
-      </div>
-
-      <div class="panel reveal">
-        <h3 data-i18n="req.head">Requirements</h3>
-        <ul class="req-list" style="margin-top:14px">
-          <li><span class="k">macOS</span><span data-i18n="req.macos">14+ (Apple Silicon or Intel)</span></li>
-          <li><span class="k" data-i18n="req.providersK">Claude / Codex / Gemini / Antigravity / OpenCode / Hermes / Cursor / Grok / Copilot / Kiro / Pi / omp / Aside</span><span data-i18n="req.providers">at least one, for usage to show</span></li>
-          <li><span class="k">Keychain</span><span data-i18n="req.keychain">optional — only for official limit %</span></li>
-        </ul>
-        <p class="note" data-i18n="req.note">Your usage stays on your Mac. The app reads your local Claude Code / Codex / Gemini CLI / Antigravity / OpenCode / Hermes / Cursor / Grok CLI / Copilot CLI / Kiro CLI / Pi Agent / omp / Aside logs, never uploads them, and never runs claude/codex model turns. It does use the network — for Pokémon data &amp; sprites (PokéAPI, cached locally), official limits, service status, and update checks — and none of those requests carry your usage. No Pokémon assets are bundled in the app.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== Footer ===== -->
-<footer>
-  <div class="wrap">
-    <div class="foot-top">
-      <a class="brand" href="#top"><img src="assets/icon.png" alt="" style="width:26px;height:26px;border-radius:6px"><span>PokeTokenBar</span></a>
-      <div class="foot-links">
-        <a href="https://github.com/chattymin/PokeTokenBar" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://github.com/chattymin/PokeTokenBar/releases" target="_blank" rel="noopener">Releases</a>
-        <a href="https://github.com/chattymin/PokeTokenBar/issues" target="_blank" rel="noopener">Issues</a>
-        <a href="https://github.com/chattymin/PokeTokenBar/blob/main/LICENSE" target="_blank" rel="noopener">License (MIT)</a>
-        <a href="https://github.com/sponsors/chattymin" target="_blank" rel="noopener">Sponsor ♥</a>
-      </div>
-    </div>
-    <p class="disclaimer" data-i18n="foot.disclaimer">
-      Pokémon data &amp; sprites by PokéAPI. This is an unofficial, non-commercial fan project. It is not affiliated with, endorsed, sponsored, or approved by Nintendo, Game Freak, or The Pokémon Company. Pokémon and Pokémon character names are trademarks of Nintendo; names, data, and sprites are © Nintendo / Game Freak / The Pokémon Company, used at runtime for identification only. The MIT license covers this project's source code only.
-    </p>
-  </div>
-</footer>
-
-<script>
-  var I18N = {
-    en: {
-      "cap5": "This month’s daily usage, with every date kept in place.",
-      "cap6": "Save difficulty changes while keeping earned progress.",
-      "cap7": "Inspect each Pokémon’s individual values, ability and moves.",
-      "cap8": "Reset timing stays beside percentages aligned at the right edge.",
-      "f13.t": "This month, day by day",
-      "f13.d": "See this month’s daily token totals across all tools in the popover. Hover a bar for that day’s usage.",
-      "f14.t": "Growth at your pace",
-      "f14.d": "Set difficulty from 10% to 200% and apply it with Save. Your earned progress is preserved. Hatches from a previously graduated base species grow twice as fast.",
-      "f15.t": "Individual Pokémon profiles",
-      "f15.d": "Explore persistent individual values, abilities and moves in Pokémon details. Localized names appear without a brief English flash.",
-      "nav.features": "Features", "nav.companion": "Companion", "nav.install": "Install",
-      "hero.eyebrow": "macOS menu bar · free & open source",
-      "hero.h1a": "Your AI coding tokens,", "hero.h1b": "hatched into Pokémon.",
-      "hero.lead": "Turn the tokens you're already burning into a Pokémon that hatches, evolves, and fills a Pokédex — with today's spend and official limits right underneath.",
-      "hero.ctaInstall": "⬇ Install with Homebrew", "hero.ctaDownload": "Download from Releases",
-      "strip.label": "Works with", "copy": "Copy",
-      "feat.h2": "Everything you need, in the menu bar",
-      "feat.sub": "A glanceable usage tracker for AI coding — no dashboard, no browser tab — with a reason to actually open it.",
-      "f1.t": "Live token usage", "f1.d": "Today's Claude Code + Codex + Gemini + Antigravity + OpenCode + Hermes + Cursor + Grok + Copilot + Kiro + Pi + omp + Aside tokens (compact, e.g. 253.4M) — combined total in the menu bar, per-service tabs in the popover.",
-      "f2.t": "Official limits", "f2.d": "Claude, Codex and Antigravity limits with reset countdowns and clock times. Choose used or remaining; percentages stay aligned with matching progress bars.",
-      "f3.t": "Burn-rate forecast", "f3.d": "Projects when your current 5-hour window will hit 100% at the current spend rate — so a wall never surprises you.",
-      "f4.t": "Growth companion + Pokédex", "f4.d": "Your usage raises a Pokémon that hatches — sometimes, by a rare stroke of luck, Shiny ✨ — evolves through its real line with natures and little celebrations, and fills a Pokédex.",
-      "f5.t": "Localized", "f5.d": "Seven UI languages. Pokémon, type, ability and move names follow your selected language, with English when a translation is unavailable.",
-      "f6.t": "Notifications", "f6.d": "Alerts when a limit crosses your warning / critical thresholds — and when your companion hatches, evolves, or graduates.",
-      "f8.t": "Floating desktop pet", "f8.d": "Let your companion live on the desktop instead of the menu bar — hover for today's usage, click to open the popover, right-click for a menu, drag to place it. Notifications can appear as a speech bubble above it.",
-      "f7.t": "Token Shop", "f7.d": "The tokens you've already used become spendable currency — buy Rare Candy to grow your Pokémon, a Mint to re-roll its nature, a Shiny Charm that permanently raises your shiny odds, or an egg to send off your companion and start fresh — plain, Uncommon-guaranteed, or Rare-guaranteed.",
-      "f9.t": "Representative Pokémon", "f9.d": "Pin any species you already own to the menu bar and floating pet, independently of the one you're raising — while pinned, the menu bar stops following egg, hatch, and evolution changes, and raising progress stays on Home.",
-      "f10.t": "Additional scan folders", "f10.d": "Logs outside the built-in paths? Add extra scan roots per provider — comma or newline separated, * wildcards, with a live count of what currently matches. Each provider keeps its own list, and custom roots are added to the defaults rather than replacing them.",
-      "f11.t": "Official limits without the Keychain", "f11.d": "Cached limit token expired? Paste a claude.ai session key under Settings → Advanced and official Claude limits come straight from claude.ai — no Keychain access, no password pop-up, and auto-polling keeps them fresh.",
-      "f12.t": "Per-model breakdown", "f12.d": "Pi usage follows the model recorded for each turn. The popover breaks today's Pi tokens down by model, biggest first.",
-      "comp.eyebrow": "The companion", "comp.h2": "Code more, raise a Pokémon",
-      "comp.sub": "Tokens spent since install grow a Pokémon through its real evolution tree — fetched live from PokéAPI, animated with Gen-V sprites.",
-      "s1.t": "Hatch", "s1.d": "Spend ~5M tokens and your egg hatches into a rarity-weighted Pokémon — one of 25 natures, and once in a rare while, Shiny ✨.",
-      "s2.t": "Evolve", "s2.d": "Keep coding to evolve it through its 1 / 2 / 3-stage line, branches included.",
-      "s3.t": "Graduate", "s3.d": "Reach the final form + threshold and it graduates — a fresh egg arrives.",
-      "s4.t": "Collect", "s4.d": "Every species you've owned folds into one Pokédex cell — and the catch log keeps each individual.",
-      "s5.t": "Rare Candy", "s5.d": "Max out a 5-hour or weekly limit and you earn Rare Candy — spend it from the Bag to grow your current Pokémon.",
-      "cap1": "Pokédex — one cell per species you've owned, in dex-number order, ✨ on the shinies.",
-      "cap2": "Once in a rare while, an egg hatches Shiny ✨ — distinct colors, kept through every evolution.",
-      "cap3": "Fill a usage limit and earn Rare Candy — spend it from the Bag to grow your Pokémon.",
-      "cap4": "Move the pet onto your desktop — hover for today's usage, right-click for a menu, drag it anywhere.",
-      "rar.common": "Common · hatches often", "rar.uncommon": "Uncommon", "rar.rare": "Rare", "rar.legendary": "Legendary · rarely",
-      "rar.note": "Rarer Pokémon take more tokens to graduate — roughly 3 days (common) to 24 days (legendary) at heavy use.",
-      "inst.h2": "Install in a minute", "inst.sub": "macOS 14+ (Apple Silicon or Intel). The Homebrew cask handles everything.",
-      "inst.s2t": "Install PokeTokenBar", "inst.s2d": "One Homebrew command — ad-hoc/self-signed; the cask strips the quarantine attribute on install.",
-      "inst.note": "Prefer building yourself? <code>swift build</code> · <code>swift test</code> · <code>./scripts/build-app.sh</code> → <code>/Applications</code>. See the <a href=\"https://github.com/chattymin/PokeTokenBar#install\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--blue)\">README</a>.",
-      "inst.gatekeeper": "Downloading directly instead? It's ad-hoc/self-signed, so on first launch right-click <code>PokeTokenBar.app</code> → <strong>Open</strong>, or run <code>xattr -dr com.apple.quarantine /Applications/PokeTokenBar.app</code>. (Homebrew does this for you.)",
-      "req.head": "Requirements", "req.macos": "14+ (Apple Silicon or Intel)",
-      "req.providersK": "Claude / Codex / Gemini / Antigravity / OpenCode / Hermes / Cursor / Grok / Copilot / Kiro / Pi / omp / Aside", "req.providers": "at least one, for usage to show", "req.keychain": "optional — only for official limit %",
-      "req.note": "Your usage stays on your Mac. The app reads your local Claude Code / Codex / Gemini CLI / Antigravity / OpenCode / Hermes / Cursor / Grok CLI / Copilot CLI / Kiro CLI / Pi Agent / omp / Aside logs, never uploads them, and never runs claude/codex model turns. It does use the network — for Pokémon data & sprites (PokéAPI, cached locally), official limits, service status, and update checks — and none of those requests carry your usage. No Pokémon assets are bundled in the app.",
-      "nav.guide": "Guide",
-      "g.eyebrow": "Field guide", "g.h2": "How it grows — all the numbers",
-      "g.sub": "How long it takes, what you'll see along the way, and what there is to collect — before you install.",
-      "g.t1": "🐣 Growth & costs", "g.t2": "🎭 A day together", "g.t3": "📕 Collection",
-      "g.costH": "Tokens per evolution",
-      "g.costSub": "The rarer the Pokémon, the longer it stays with you. These are base costs at 100% difficulty; repeat hatches receive 2× growth.",
-      "g.thRarity": "Rarity", "g.thS1": "Stage 1", "g.thS2": "Stage 2", "g.thS3": "Stage 3 (graduate)", "g.thTotal": "Total",
-      "g.calcH": "How long on my pace?",
-      "g.calcQ": "How many AI-coding tokens do you burn per day? (total, including cache reads)",
-      "g.p1": "Light · 10M/day", "g.p2": "Steady · 40M/day", "g.p3": "Heavy · 120M/day", "g.p4": "Agent fleet · 300M/day",
-      "g.honest": "Every number on this page is hard-coded in the app. No server, no purchases, no shortcuts — just code.",
-      "g.dailyIntro": "The companion in your menu bar isn't a decoration — it lives your coding rhythm, switching sprites and captions in real time.",
-      "g.st1w": "no tokens today", "g.st1t": "Fast asleep", "g.st1d": "When you rest, it rests. Weekend menu bars are quiet.",
-      "g.st2w": "light use", "g.st2t": "Loafing around", "g.st2d": "A few questions here and there — it idles beside you.",
-      "g.st3w": "coding steadily", "g.st3t": "Working along", "g.st3d": "Your normal pace. It keeps busy too.",
-      "g.st4w": "100k+ tokens/min", "g.st4t": "In the zone", "g.st4d": "Agents running hot — so is your partner.",
-      "g.st5w": "limit almost reached", "g.st5t": "Worn out", "g.st5d": "When a usage limit is close, it tires before you do. Take the hint.",
-      "g.st6w": "evolution · graduation", "g.st6t": "Celebrating", "g.st6d": "Evolution moments and a graduation send-off — a few seconds worth catching.",
-      "g.dailyNote": "Hatching has its own animation — and a Shiny hatch announces itself.",
-      "g.loop": "Not an ending — a loop. Every graduation fills a Pokédex slot and a new egg arrives.",
-      "g.cWhat": "To collect", "g.cHow": "How it works",
-      "g.c1k": "Species", "g.c1v": "329 from Generations I–V — every hatch is random. You won't know until it cracks.",
-      "g.c2k": "Rarities", "g.c2v": "Four tiers, Common to Legendary — the rare ones hatch rarely and stay longest.",
-      "g.c3k": "✨ Shiny",
-      "g.c3v": "A rare stroke of luck at hatch — distinct colors, kept through every evolution.",
-      "g.c4k": "Natures", "g.c4v": "One of 25 per hatch — the same species never feels quite the same.",
-      "g.c5k": "Branches", "g.c5v": "Branching lines prefer a branch you haven't collected — the Pokédex fills itself as you keep raising.",
-      "g.c6k": "Pokédex", "g.c6v": "Recorded as (starter → final form) pairs with the full line — same starter, different branch, different entry.",
-      "foot.disclaimer": "Pokémon data & sprites by PokéAPI. This is an unofficial, non-commercial fan project. It is not affiliated with, endorsed, sponsored, or approved by Nintendo, Game Freak, or The Pokémon Company. Pokémon and Pokémon character names are trademarks of Nintendo; names, data, and sprites are © Nintendo / Game Freak / The Pokémon Company, used at runtime for identification only. The MIT license covers this project's source code only."
-    },
-    ko: {
-      "cap5": "날짜를 빠뜨리지 않고 보여주는 이번 달의 일별 사용량.",
-      "cap6": "이미 쌓은 진행률을 유지하면서 난이도 변경을 저장하세요.",
-      "cap7": "포켓몬마다 유지되는 개체값·특성·기술을 확인하세요.",
-      "cap8": "리셋 시간 옆의 퍼센트가 오른쪽 끝에 정렬됩니다.",
-      "f13.t": "이번 달의 일별 사용량",
-      "f13.d": "팝오버에서 모든 도구를 합산한 이번 달의 일별 토큰 사용량을 확인하세요. 막대에 마우스를 올리면 해당 날짜의 수치가 표시됩니다.",
-      "f14.t": "내 속도에 맞는 성장",
-      "f14.d": "난이도를 10%~200%로 조절하고 저장을 눌러 적용하세요. 이미 쌓은 성장 진행률은 유지됩니다. 졸업한 기본 종이 다시 부화하면 2배로 성장합니다.",
-      "f15.t": "포켓몬 개체별 상세",
-      "f15.d": "유지되는 개체값과 특성·기술을 상세 화면에서 확인하세요. 번역을 불러올 때 영어가 잠깐 나타나는 현상도 없앴습니다.",
-      "nav.features": "기능", "nav.companion": "파트너", "nav.install": "설치",
-      "hero.eyebrow": "macOS 메뉴바 · 무료 오픈소스",
-      "hero.h1a": "AI 코딩 토큰이,", "hero.h1b": "포켓몬으로 부화합니다.",
-      "hero.lead": "이미 태우고 있는 토큰이 부화하고, 진화하고, 도감을 채워요. 그 바로 아래엔 오늘의 사용량과 공식 한도가 있고요.",
-      "hero.ctaInstall": "⬇ Homebrew로 설치", "hero.ctaDownload": "Releases에서 받기",
-      "strip.label": "연동", "copy": "복사",
-      "feat.h2": "필요한 건 메뉴바에 다 있어요",
-      "feat.sub": "대시보드도 브라우저 탭도 필요 없어요. 사용량을 한눈에 — 매일 열어보고 싶어지는 재미는 덤이고요.",
-      "f1.t": "실시간 토큰 사용량", "f1.d": "오늘 쓴 Claude Code·Codex·Gemini·Antigravity·OpenCode·Hermes·Cursor·Grok·Copilot·Kiro·Pi·omp·Aside 토큰 합계를 메뉴바에 간결하게(예: 253.4M). 팝오버에선 서비스별 탭으로 상세를 넘나들어요.",
-      "f2.t": "공식 사용 한도", "f2.d": "Claude·Codex·Antigravity 한도와 리셋까지 남은 시간·시각을 확인하세요. 사용량과 남은량을 선택하면 그래프도 맞춰 바뀌고 퍼센트는 오른쪽에 정렬됩니다.",
-      "f3.t": "한도 소진 예측", "f3.d": "지금 속도라면 5시간 한도에 언제 닿을지 미리 알려줘요. 갑자기 막혀서 당황할 일이 없죠.",
-      "f4.t": "키우는 재미 + 도감", "f4.d": "사용량으로 포켓몬이 부화하고(아주 특별한 우연으론 ✨ 이로치!), 성격과 작은 연출과 함께 진화해 도감을 채워가요.",
-      "f5.t": "다국어 지원", "f5.d": "7개 언어 UI를 지원합니다. 포켓몬·타입·특성·기술 이름은 선택한 언어로 표시하고 번역이 없으면 영어를 사용합니다.",
-      "f6.t": "알림", "f6.d": "한도가 경고·임박 기준을 넘거나, 파트너가 부화·진화·졸업할 때 알려줘요.",
-      "f8.t": "데스크톱 플로팅 펫", "f8.d": "파트너를 메뉴바 대신 바탕화면 위에 둘 수 있어요 — 호버하면 오늘 사용량, 클릭하면 팝오버, 우클릭하면 메뉴, 드래그로 위치를 옮겨요. 알림은 펫 위 말풍선으로도 뜹니다.",
-      "f7.t": "토큰 상점", "f7.d": "사용한 토큰이 곧 재화가 돼요 — 이상한 사탕으로 포켓몬을 키우거나, 민트로 성격을 다시 굴리거나, 이로치 부적으로 이로치 확률을 영구히 올리거나, 알로 지금 포켓몬을 놓아주고 새로 시작하세요 — 보증 없는 알·고급 이상 확정·희귀 이상 확정 세 종류예요.",
-      "f9.t": "대표 포켓몬", "f9.d": "도감에서 이미 가진 종을 골라 메뉴바와 플로팅 펫에 고정할 수 있어요 — 키우는 포켓몬과 별개예요. 고정 중엔 메뉴바가 알·부화·진화를 따라가지 않고, 육성 진행은 홈에서 그대로 봅니다.",
-      "f10.t": "추가 스캔 폴더", "f10.d": "로그가 기본 경로 밖에 있나요? 프로바이더별로 스캔 루트를 더 넣을 수 있어요 — 콤마·줄바꿈 구분, * 와일드카드, 지금 몇 개가 걸리는지 실시간 표시. 목록은 프로바이더마다 따로고, 추가한 경로는 기본 경로를 대체하지 않고 더해집니다.",
-      "f11.t": "Keychain 없는 공식 한도", "f11.d": "한도 토큰이 만료됐나요? 설정 → 고급에 claude.ai 세션 키를 붙여넣으면 공식 Claude 한도를 claude.ai에서 바로 읽어요 — Keychain 접근도, 암호 팝업도 없이 자동 폴링으로 최신을 유지합니다.",
-      "f12.t": "모델별 내역", "f12.d": "Pi 사용량을 각 턴에 기록된 실제 모델로 집계합니다. 팝오버에서 오늘의 Pi 토큰을 모델별로 사용량이 큰 순서대로 확인하세요.",
-      "comp.eyebrow": "파트너", "comp.h2": "코딩할수록 포켓몬이 자랍니다",
-      "comp.sub": "설치 후 쌓인 토큰이 실제 진화 트리를 따라 포켓몬을 키워요. PokéAPI에서 실시간으로 불러온 Gen-V 스프라이트가 살아 움직이죠.",
-      "s1.t": "부화", "s1.d": "약 5M 토큰을 쓰면 알이 부화해요. 25종 성격 중 하나를 갖고 태어나고 — 아주 특별한 우연이 닿으면 ✨ 이로치가 태어나요.",
-      "s2.t": "진화", "s2.d": "계속 코딩하면 1·2·3단계 진화 라인을 따라 자라요(분기 진화 포함).",
-      "s3.t": "졸업", "s3.d": "최종 진화 후 임계치를 넘기면 도감에 졸업하고, 새 알이 도착해요.",
-      "s4.t": "수집", "s4.d": "가져본 종은 도감 한 칸으로 접히고, 키운 개체는 포획 로그에 그대로 남아요.",
-      "s5.t": "이상한 사탕", "s5.d": "5시간 또는 주간 한도를 다 채우면 이상한 사탕을 받아요 — 가방에서 써서 현재 포켓몬을 키우세요.",
-      "cap1": "도감 — 가져본 종을 도감 번호순으로 한 칸씩, 이로치엔 ✨.",
-      "cap2": "아주 드문 우연으로 이로치가 태어나요 — 전용 색상, 진화해도 유지됩니다.",
-      "cap3": "사용량 한도를 다 채우면 이상한 사탕을 받아요 — 가방에서 써서 포켓몬을 키우세요.",
-      "cap4": "펫을 바탕화면으로 꺼내 보세요 — 호버하면 오늘 사용량, 우클릭하면 메뉴, 드래그로 어디든.",
-      "rar.common": "Common · 자주 등장", "rar.uncommon": "Uncommon", "rar.rare": "Rare", "rar.legendary": "Legendary · 희귀",
-      "rar.note": "희귀할수록 졸업까지 더 많은 토큰이 들어요 — 헤비 유저 기준 common은 약 3일, legendary는 약 24일.",
-      "inst.h2": "1분이면 설치 끝", "inst.sub": "macOS 14 이상(Apple Silicon·Intel). 나머지는 Homebrew cask가 알아서 처리해요.",
-      "inst.s2t": "PokeTokenBar 설치", "inst.s2d": "Homebrew 명령 한 줄이면 끝. ad-hoc·자체 서명 앱이라 설치할 때 격리 속성은 cask가 알아서 풀어줘요.",
-      "inst.note": "직접 빌드하고 싶다면 <code>swift build</code> · <code>swift test</code> · <code>./scripts/build-app.sh</code> → <code>/Applications</code>. 자세한 내용은 <a href=\"https://github.com/chattymin/PokeTokenBar#install\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--blue)\">README</a>를 참고하세요.",
-      "inst.gatekeeper": "직접 내려받아 실행하나요? ad-hoc·자체 서명 앱이라 첫 실행 때 <code>PokeTokenBar.app</code>을 우클릭 → <strong>열기</strong>, 또는 <code>xattr -dr com.apple.quarantine /Applications/PokeTokenBar.app</code>을 실행하세요. (Homebrew는 자동 처리.)",
-      "req.head": "필요 환경", "req.macos": "14 이상 (Apple Silicon·Intel)",
-      "req.providersK": "Claude·Codex·Gemini·Antigravity·OpenCode·Hermes·Cursor·Grok·Copilot·Kiro·Pi·omp·Aside", "req.providers": "하나만 있어도 사용량이 표시돼요", "req.keychain": "선택 — 공식 한도(%)를 볼 때만",
-      "req.note": "사용량은 이 맥 안에 머물러요. 앱은 로컬 Claude Code/Codex/Gemini CLI/Antigravity/OpenCode/Hermes/Cursor/Grok CLI/Copilot CLI/Kiro CLI/Pi Agent/omp/Aside 로그를 직접 읽을 뿐 업로드하지 않고, claude·codex 모델도 돌리지 않아요. 다만 네트워크는 사용합니다 — 포켓몬 데이터·스프라이트(PokéAPI, 로컬 캐시), 공식 한도, 서비스 상태, 업데이트 확인. 어느 요청에도 사용량은 담기지 않아요. 앱에는 포켓몬 에셋을 번들하지 않습니다.",
-      "nav.guide": "가이드",
-      "g.eyebrow": "필드 가이드", "g.h2": "어떻게 자라나요 — 숫자 전부 공개",
-      "g.sub": "얼마나 걸리는지, 어떤 모습을 보게 되는지, 뭘 모으게 되는지 — 설치 전에 미리 보여드려요.",
-      "g.t1": "🐣 성장 & 진화 비용", "g.t2": "🎭 파트너의 하루", "g.t3": "📕 수집",
-      "g.costH": "진화에 필요한 토큰",
-      "g.costSub": "희귀한 포켓몬일수록 오래 함께합니다. 아래는 난이도 100%의 기본 비용이며, 졸업한 기본 종이 다시 부화하면 2배 성장합니다.",
-      "g.thRarity": "희귀도", "g.thS1": "1단계", "g.thS2": "2단계", "g.thS3": "3단계 (졸업)", "g.thTotal": "총량",
-      "g.calcH": "내 페이스로는 얼마나 걸릴까?",
-      "g.calcQ": "하루에 AI 코딩 토큰을 얼마나 쓰시나요? (캐시 읽기 포함 총량)",
-      "g.p1": "가볍게 · 10M/일", "g.p2": "보통 · 40M/일", "g.p3": "헤비 · 120M/일", "g.p4": "에이전트 군단 · 300M/일",
-      "g.honest": "이 페이지의 모든 숫자는 앱 코드에 그대로 들어 있어요. 서버도, 과금도, 지름길도 없습니다 — 오직 코딩만.",
-      "g.dailyIntro": "메뉴바의 파트너는 장식이 아니에요. 당신의 코딩 리듬을 그대로 살아요 — 스프라이트와 문구가 실시간으로 바뀝니다.",
-      "g.st1w": "오늘 사용량 0", "g.st1t": "쿨쿨", "g.st1d": "당신이 쉬면 파트너도 자요. 주말의 메뉴바는 조용하답니다.",
-      "g.st2w": "가끔 한 번씩", "g.st2t": "느긋", "g.st2d": "가볍게 몇 번 물어본 날엔 옆에서 어슬렁거려요.",
-      "g.st3w": "꾸준히 코딩 중", "g.st3t": "같이 일하는 중", "g.st3d": "평소 페이스. 파트너도 부지런히 움직여요.",
-      "g.st4w": "분당 10만 토큰 이상", "g.st4t": "몰입", "g.st4d": "에이전트가 달리고 있을 때 — 파트너도 달아올라요.",
-      "g.st5w": "한도 임박", "g.st5t": "지침", "g.st5d": "사용 한도가 코앞이면 파트너가 먼저 지쳐요. 눈치채 주세요.",
-      "g.st6w": "진화 · 졸업 직후", "g.st6t": "축하", "g.st6d": "진화 순간과 졸업 연출 — 놓치기 아까운 몇 초예요.",
-      "g.dailyNote": "부화 순간엔 전용 연출이 있고, 이로치가 태어나면 연출부터 달라요.",
-      "g.loop": "끝이 아니라 루프예요. 졸업할 때마다 도감이 한 칸 채워지고, 새 알이 도착합니다.",
-      "g.cWhat": "모을 것", "g.cHow": "어떻게",
-      "g.c1k": "종", "g.c1v": "1~5세대 329종 — 부화마다 랜덤이에요. 깨보기 전엔 몰라요.",
-      "g.c2k": "희귀도", "g.c2v": "Common부터 Legendary까지 4등급 — 희귀할수록 드물게 나오고, 오래 함께해요.",
-      "g.c3k": "✨ 이로치",
-      "g.c3v": "부화 순간의 아주 드문 행운 — 전용 색상, 진화해도 유지돼요.",
-      "g.c4k": "성격", "g.c4v": "부화마다 25종 중 하나 — 같은 종이라도 느낌이 달라요.",
-      "g.c5k": "분기 진화", "g.c5v": "진화가 갈라지는 종은 아직 도감에 없는 쪽을 우선해요 — 키울수록 도감이 알아서 채워집니다.",
-      "g.c6k": "도감", "g.c6v": "(시작 종 → 최종형) 쌍으로 기록되고 진화 라인 전체가 남아요. 같은 시작 종도 분기가 다르면 별개 항목.",
-      "foot.disclaimer": "포켓몬 데이터·스프라이트는 PokéAPI를 사용합니다. 본 프로젝트는 비공식·비상업 팬 프로젝트로, Nintendo·Game Freak·The Pokémon Company와 제휴하거나 보증·후원·승인을 받지 않았습니다. ‘Pokémon’과 포켓몬 캐릭터 이름은 Nintendo의 상표이며, 이름·데이터·스프라이트의 저작권은 © Nintendo / Game Freak / The Pokémon Company에 있고 식별 목적으로만 런타임에 사용됩니다. MIT 라이선스는 본 프로젝트의 소스 코드에만 적용됩니다."
-    },
-    ja: {
-      "cap5": "日付を飛ばさず表示する今月の日別使用量。",
-      "cap6": "獲得済みの進捗を保って難易度変更を保存。",
-      "cap7": "各ポケモンの個体値・特性・技を確認。",
-      "cap8": "リセット時間の隣で割合を右端に揃えて表示。",
-      "f13.t": "今月の日別使用量",
-      "f13.d": "ポップオーバーで全ツールを合算した今月の日別トークン使用量を確認。バーにポインタを重ねると、その日の数値を表示します。",
-      "f14.t": "自分のペースで育成",
-      "f14.d": "難易度を10%〜200%で調整し、保存して適用。獲得済みの育成進捗は維持されます。卒業済みの基本種が再び孵化すると2倍で成長します。",
-      "f15.t": "ポケモンごとの詳細",
-      "f15.d": "保存される個体値や特性・技を詳細画面で確認。翻訳の読み込み中に英語が一瞬表示される現象も解消しました。",
-      "nav.features": "機能", "nav.companion": "パートナー", "nav.install": "インストール",
-      "hero.eyebrow": "macOS メニューバー · 無料 & オープンソース",
-      "hero.h1a": "あなたのAIコーディングトークンが、", "hero.h1b": "ポケモンに孵化する。",
-      "hero.lead": "すでに使っているトークンが孵化し、進化し、図鑑を埋めていきます。そのすぐ下には今日の使用量と公式の上限。",
-      "hero.ctaInstall": "⬇ Homebrew でインストール", "hero.ctaDownload": "Releases から入手",
-      "strip.label": "連携", "copy": "コピー",
-      "feat.h2": "必要なものは、メニューバーに",
-      "feat.sub": "ダッシュボードもブラウザタブも不要。使用量はひと目で——しかも毎日開きたくなる楽しさつき。",
-      "f1.t": "リアルタイムの使用量", "f1.d": "今日の Claude Code・Codex・Gemini・Antigravity・OpenCode・Hermes・Cursor・Grok・Copilot・Kiro・Pi・omp・Aside トークン合計をメニューバーにコンパクト表示（例：253.4M）。ポップオーバーではサービス別タブで詳細を切替。",
-      "f2.t": "公式の使用上限", "f2.d": "Claude・Codex・Antigravity の上限とリセットまでの時間・時刻を表示。使用量と残量の選択にグラフも連動し、割合は右端に揃います。",
-      "f3.t": "上限到達の予測", "f3.d": "今のペースなら5時間の上限にいつ達するかを事前に予測。急に止まって困ることがありません。",
-      "f4.t": "育てる楽しさ + 図鑑", "f4.d": "使用量でポケモンが孵化し（ごくまれな偶然で ✨ 色違いも）、せいかくや小さな演出とともに進化して図鑑を埋めていきます。",
-      "f5.t": "多言語対応", "f5.d": "7言語の UI に対応。ポケモン・タイプ・特性・技の名前は選択した言語を優先し、翻訳がなければ英語を使います。",
-      "f6.t": "通知", "f6.d": "上限が警告・危険のラインを超えたとき、そしてパートナーが孵化・進化・卒業したときにお知らせします。",
-      "f8.t": "デスクトップのフローティングペット", "f8.d": "パートナーをメニューバーではなくデスクトップに置けます — ホバーで今日の使用量、クリックでポップオーバー、右クリックでメニュー、ドラッグで移動。通知はペットの上に吹き出しでも表示されます。",
-      "f7.t": "トークンショップ", "f7.d": "使ったトークンがそのまま通貨に — ふしぎなアメで育てたり、ミントでせいかくを引き直したり、光るお守りで色違い確率を永続的に上げたり、タマゴで今のパートナーを手放してやり直したりできます — 保証なし・アンコモン以上確定・レア以上確定の3種類。",
-      "f9.t": "代表ポケモン", "f9.d": "図鑑で所有している種を選び、育成中のポケモンとは別にメニューバーとフローティングペットへ固定できます — 固定中はメニューバーがタマゴ・孵化・進化を追わなくなり、育成の進行は Home で確認できます。",
-      "f10.t": "追加スキャンフォルダ", "f10.d": "ログが既定のパスの外にありますか？プロバイダーごとにスキャンルートを追加できます — カンマ・改行区切り、* ワイルドカード、いま何個一致しているかをその場で表示。リストはプロバイダーごとに分かれ、追加したパスは既定を置き換えずに加算されます。",
-      "f11.t": "Keychain なしの公式上限", "f11.d": "上限トークンが切れたら、設定 → 詳細に claude.ai セッションキーを貼り付けるだけ。公式の Claude 上限を claude.ai から直接読むので、Keychain アクセスもパスワードポップアップもなく、自動ポーリングで最新を保ちます。",
-      "f12.t": "モデル別の内訳", "f12.d": "Pi の使用量を各ターンに記録されたモデルで集計。ポップオーバーで今日の Pi トークンをモデル別に使用量順で確認できます。",
-      "comp.eyebrow": "パートナー", "comp.h2": "コードするほど、ポケモンが育つ",
-      "comp.sub": "インストール後に積み上がったトークンが、実際の進化ツリーに沿ってポケモンを育てます。PokéAPI からリアルタイムに取得した Gen-V スプライトが生き生きと動きます。",
-      "s1.t": "孵化", "s1.d": "約5Mトークンでタマゴが孵化。25種類のせいかくを持って生まれ — ごくまれな偶然で ✨ 色違いが生まれることも。",
-      "s2.t": "進化", "s2.d": "コードを続けると、1・2・3段階の進化ライン（分岐進化を含む）に沿って成長します。",
-      "s3.t": "卒業", "s3.d": "最終進化のあと閾値に達すると図鑑へ卒業し、新しいタマゴが届きます。",
-      "s4.t": "収集", "s4.d": "持ったことのある種は図鑑の1マスにまとまり、育てた個体は捕獲ログに残ります。",
-      "s5.t": "ふしぎなアメ", "s5.d": "5時間または週間の上限を使い切るとふしぎなアメがもらえます — バッグから使っていまのポケモンを育てましょう。",
-      "cap1": "図鑑 — 持ったことのある種を図鑑番号順に1マスずつ、色違いには✨。",
-      "cap2": "ごくまれな偶然で色違いが孵化 — 専用カラーで、進化しても維持されます。",
-      "cap3": "使用量の上限を使い切るとふしぎなアメがもらえます — バッグから使ってポケモンを育てましょう。",
-      "cap4": "ペットをデスクトップへ — ホバーで今日の使用量、右クリックでメニュー、ドラッグで自由に移動。",
-      "rar.common": "Common · よく出現", "rar.uncommon": "Uncommon", "rar.rare": "Rare", "rar.legendary": "Legendary · 希少",
-      "rar.note": "レアなほど卒業に多くのトークンが必要です——ヘビーユーザーで common 約3日、legendary 約24日。",
-      "inst.h2": "1分でインストール", "inst.sub": "macOS 14 以降（Apple Silicon・Intel）。あとは Homebrew cask におまかせ。",
-      "inst.s2t": "PokeTokenBar をインストール", "inst.s2d": "Homebrew のコマンド1行で完了。ad-hoc・自己署名アプリのため、インストール時の隔離属性は cask が自動で解除します。",
-      "inst.note": "自分でビルドする場合は <code>swift build</code> · <code>swift test</code> · <code>./scripts/build-app.sh</code> → <code>/Applications</code>。詳しくは <a href=\"https://github.com/chattymin/PokeTokenBar#install\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--blue)\">README</a> をご覧ください。",
-      "inst.gatekeeper": "直接ダウンロードして起動する場合は？ ad-hoc・自己署名アプリのため、初回起動時に <code>PokeTokenBar.app</code> を右クリック → <strong>開く</strong>、または <code>xattr -dr com.apple.quarantine /Applications/PokeTokenBar.app</code> を実行してください。（Homebrew なら自動。）",
-      "req.head": "動作環境", "req.macos": "14 以降（Apple Silicon・Intel）",
-      "req.providersK": "Claude・Codex・Gemini・Antigravity・OpenCode・Hermes・Cursor・Grok・Copilot・Kiro・Pi・omp・Aside", "req.providers": "ひとつだけでも使用量を表示", "req.keychain": "任意 — 公式の上限(%)を見るときだけ",
-      "req.note": "使用量はこの Mac の中に留まります。アプリはローカルの Claude Code / Codex / Gemini CLI / Antigravity / OpenCode / Hermes / Cursor / Grok CLI / Copilot CLI / Kiro CLI / Pi Agent / omp / Aside ログを読み取るだけでアップロードせず、claude・codex のモデルも実行しません。ただしネットワークは使用します — ポケモンのデータ・スプライト（PokéAPI、ローカルにキャッシュ）、公式の上限、サービス状態、アップデート確認。いずれのリクエストにも使用量は含まれません。アプリにポケモンのアセットはバンドルしません。",
-      "nav.guide": "ガイド",
-      "g.eyebrow": "フィールドガイド", "g.h2": "どう育つ？ — 数字をぜんぶ公開",
-      "g.sub": "どれくらいかかるのか、どんな姿が見られるのか、何を集められるのか — インストール前にお見せします。",
-      "g.t1": "🐣 成長 & 進化コスト", "g.t2": "🎭 パートナーの一日", "g.t3": "📕 コレクション",
-      "g.costH": "進化に必要なトークン",
-      "g.costSub": "希少なポケモンほど長く一緒に過ごします。以下は難易度100%の基本コストで、卒業済みの基本種が再び孵化すると2倍で成長します。",
-      "g.thRarity": "レア度", "g.thS1": "段階 1", "g.thS2": "段階 2", "g.thS3": "段階 3（卒業）", "g.thTotal": "合計",
-      "g.calcH": "自分のペースだとどれくらい？",
-      "g.calcQ": "1日にAIコーディングトークンをどれくらい使いますか？（キャッシュ読み込み込みの総量）",
-      "g.p1": "ライト · 10M/日", "g.p2": "ふつう · 40M/日", "g.p3": "ヘビー · 120M/日", "g.p4": "エージェント艦隊 · 300M/日",
-      "g.honest": "このページの数字はすべてアプリのコードにそのまま入っています。サーバーも課金も近道もなし — コードだけ。",
-      "g.dailyIntro": "メニューバーのパートナーは飾りではありません。あなたのコーディングのリズムをそのまま生きています — スプライトとキャプションがリアルタイムに変わります。",
-      "g.st1w": "今日の使用量 0", "g.st1t": "ぐっすり", "g.st1d": "あなたが休めばパートナーも眠ります。週末のメニューバーは静かです。",
-      "g.st2w": "ときどき使う", "g.st2t": "のんびり", "g.st2d": "軽く数回聞いた日は、そばでうろうろ。",
-      "g.st3w": "コツコツ作業中", "g.st3t": "いっしょに仕事中", "g.st3d": "いつものペース。パートナーもせっせと動きます。",
-      "g.st4w": "毎分10万トークン以上", "g.st4t": "ゾーンに突入", "g.st4d": "エージェントが全力疾走中 — パートナーも燃えています。",
-      "g.st5w": "上限が目前", "g.st5t": "へとへと", "g.st5d": "使用上限が近づくと、あなたより先に疲れます。察してあげてください。",
-      "g.st6w": "進化 · 卒業の直後", "g.st6t": "お祝い", "g.st6d": "進化の瞬間と卒業の演出 — 見逃すには惜しい数秒です。",
-      "g.dailyNote": "孵化には専用の演出があり、色違いが生まれると演出からして違います。",
-      "g.loop": "終わりではなくループ。卒業のたびに図鑑が1マス埋まり、新しいタマゴが届きます。",
-      "g.cWhat": "集めるもの", "g.cHow": "しくみ",
-      "g.c1k": "種族", "g.c1v": "第1〜5世代の329種 — 孵化のたびにランダム。割れるまでわかりません。",
-      "g.c2k": "レア度", "g.c2v": "Common から Legendary の4段階 — レアなほど出にくく、長く一緒にいられます。",
-      "g.c3k": "✨ 色違い",
-      "g.c3v": "孵化のごくまれな幸運 — 専用カラーで、進化しても維持されます。",
-      "g.c4k": "せいかく", "g.c4v": "孵化ごとに25種類からひとつ — 同じ種族でも印象が変わります。",
-      "g.c5k": "分岐進化", "g.c5v": "進化が分かれる種族は、まだ図鑑にない方を優先 — 育てるほど図鑑がひとりでに埋まります。",
-      "g.c6k": "図鑑", "g.c6v": "（最初の種族 → 最終形）のペアで記録され、進化ライン全体が残ります。同じ種族でも分岐が違えば別エントリー。",
-      "foot.disclaimer": "ポケモンのデータ・スプライトは PokéAPI を使用しています。本プロジェクトは非公式・非商用のファンプロジェクトであり、任天堂・ゲームフリーク・株式会社ポケモンとの提携、推奨、後援、承認はありません。「ポケモン」およびポケモンのキャラクター名は任天堂の商標であり、名前・データ・スプライトの著作権は © Nintendo / Game Freak / The Pokémon Company に帰属し、識別目的でランタイムに利用しています。MIT ライセンスは本プロジェクトのソースコードのみを対象とします。"
-    }
-  };
-
-  function applyLang(lang) {
-    if (!I18N[lang]) lang = 'en';
-    var dict = I18N[lang];
-    document.documentElement.lang = lang;
-    document.querySelectorAll('[data-i18n]').forEach(function (el) {
-      var v = dict[el.getAttribute('data-i18n')]; if (v != null) el.textContent = v;
-    });
-    document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
-      var v = dict[el.getAttribute('data-i18n-html')]; if (v != null) el.innerHTML = v;
-    });
-    document.querySelectorAll('#langSeg button').forEach(function (b) {
-      b.classList.toggle('active', b.getAttribute('data-lang') === lang);
-    });
-    try { localStorage.setItem('ptb-lang', lang); } catch (e) {}
-  }
-
-  function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    document.getElementById('themeBtn').textContent = theme === 'light' ? '☀' : '☾';
-    try { localStorage.setItem('ptb-theme', theme); } catch (e) {}
-  }
-
-  // Language: stored → browser → en
-  (function () {
-    var stored; try { stored = localStorage.getItem('ptb-lang'); } catch (e) {}
-    if (!stored) {
-      var nav = (navigator.language || 'en').toLowerCase();
-      stored = nav.indexOf('ko') === 0 ? 'ko' : nav.indexOf('ja') === 0 ? 'ja' : 'en';
-    }
-    applyLang(stored);
-  })();
-  // Theme already set pre-paint; sync the button icon + wire toggle
-  applyTheme(document.documentElement.getAttribute('data-theme') || 'dark');
-
-  document.getElementById('langSeg').addEventListener('click', function (e) {
-    var b = e.target.closest('button[data-lang]'); if (b) applyLang(b.getAttribute('data-lang'));
-  });
-  document.getElementById('themeBtn').addEventListener('click', function () {
-    applyTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
-  });
-
-  // Copy-to-clipboard
-  document.querySelectorAll('[data-copy]').forEach(function (el) {
-    el.addEventListener('click', function () {
-      navigator.clipboard.writeText(el.getAttribute('data-copy')).then(function () {
-        var t = el.classList.contains('copy') ? el : (el.querySelector('span') || el);
-        var prev = t.textContent;
-        t.textContent = el.classList.contains('copy') ? '✓' : '✓ Copied';
-        if (el.classList.contains('copy')) el.classList.add('done');
-        setTimeout(function () { t.textContent = prev; el.classList.remove('done'); }, 1500);
-      });
-    });
-  });
-
-  // Scroll reveal
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-    }, { threshold: 0.12 });
-    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
-  } else {
-    document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
-  }
-</script>
-<script>
-  // ===== Guide tabs + journey calculator =====
-  document.querySelectorAll('[data-gtab]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      document.querySelectorAll('[data-gtab]').forEach(function (b) { b.setAttribute('aria-selected', 'false'); });
-      document.querySelectorAll('.tabpanel').forEach(function (p) { p.classList.remove('active'); });
-      btn.setAttribute('aria-selected', 'true');
-      document.getElementById('gtab-' + btn.getAttribute('data-gtab')).classList.add('active');
-    });
-  });
-
-  // Same formulas as the app: hatch 5M; stage i of a k-stage line costs total × i ÷ (k(k+1)/2)
-  var G_HATCH = 5e6, G_K = 3, G_DENOM = 6;
-  var G_TOTALS = { common: 750e6, uncommon: 1.875e9, rare: 3e9, legendary: 6e9 };
-  var G_STR = {
-    en: { hatch: '🐣 Hatch', evo: function (i) { return '⚡️ Evolution ' + i; }, grad: '🎓 Graduate — Pokédex entry, new egg', day1: 'day one', day: function (n) { return 'day ' + n; }, mo: function (m) { return '~' + m + ' months in'; }, yr: function (y) { return '~' + y + ' years in'; } },
-    ko: { hatch: '🐣 부화', evo: function (i) { return '⚡️ ' + i + '차 진화'; }, grad: '🎓 졸업 — 도감 등록, 새 알 도착', day1: '첫날', day: function (n) { return n + '일째'; }, mo: function (m) { return '약 ' + m + '개월째'; }, yr: function (y) { return '약 ' + y + '년째'; } },
-    ja: { hatch: '🐣 孵化', evo: function (i) { return '⚡️ 進化 ' + i; }, grad: '🎓 卒業 — 図鑑登録、新しいタマゴ', day1: '初日', day: function (n) { return n + '日目'; }, mo: function (m) { return '約' + m + 'か月目'; }, yr: function (y) { return '約' + y + '年目'; } }
-  };
-  var gPace = 40, gRar = 'common';
-  function gDays(tokens, s) {
-    var d = tokens / (gPace * 1e6);
-    if (d <= 1) return s.day1;
-    if (d < 60) return s.day(Math.ceil(d));
-    if (d < 365) return s.mo(Math.round(d / 30));
-    return s.yr((d / 365).toFixed(1).replace(/\.0$/, ''));
-  }
-  function gRender() {
-    var s = G_STR[document.documentElement.lang] || G_STR.en;
-    var total = G_TOTALS[gRar], cum = G_HATCH, rows = [{ l: s.hatch, cum: cum, minor: false }];
-    for (var i = 1; i <= G_K; i++) {
-      cum += total * i / G_DENOM;
-      rows.push({ l: i < G_K ? s.evo(i) : s.grad, cum: cum, minor: i < G_K });
-    }
-    document.getElementById('gTimeline').innerHTML = rows.map(function (r) {
-      return '<div class="tl-row"><span class="tl-dot' + (r.minor ? ' minor' : '') + '"></span><span>' + r.l + '</span><span class="tl-when">' + gDays(r.cum, s) + '</span></div>';
-    }).join('');
-  }
-  function gSeg(id, fn) {
-    document.getElementById(id).addEventListener('click', function (e) {
-      var b = e.target.closest('button'); if (!b) return;
-      document.querySelectorAll('#' + id + ' button').forEach(function (x) { x.classList.remove('active'); });
-      b.classList.add('active'); fn(b.getAttribute('data-v')); gRender();
-    });
-  }
-  gSeg('gPace', function (v) { gPace = +v; });
-  gSeg('gRarity', function (v) { gRar = v; });
-  // 언어 전환 시 타임라인 문자열도 재렌더 (기존 applyLang 이후 실행되도록 defer)
-  document.getElementById('langSeg').addEventListener('click', function () { setTimeout(gRender, 0); });
-  gRender();
-</script>
-</body>
-</html>
+</div></div></section>
+<section class="section providers" id="providers" aria-labelledby="providers-title"><div class="wrap"><h2 id="providers-title" data-i18n="providers.more">13 tools. One companion.</h2><p class="muted" data-i18n="providers.label">Works with your coding tools</p><ul class="provider-grid">
+<li><a class="provider-link" href="https://claude.com/product/claude-code"><span class="provider-icon"><img src="assets/providers/claude.png" width="28" height="28" alt="" loading="lazy"></span><span>Claude Code</span></a></li>
+<li><a class="provider-link" href="https://openai.com/codex/"><span class="provider-icon"><img src="assets/providers/codex.png" width="28" height="28" alt="" loading="lazy"></span><span>Codex</span></a></li>
+<li><a class="provider-link" href="https://geminicli.com/"><span class="provider-icon"><img src="assets/providers/gemini.png" width="28" height="28" alt="" loading="lazy"></span><span>Gemini CLI</span></a></li>
+<li><a class="provider-link" href="https://antigravity.google/"><span class="provider-icon"><img src="assets/providers/antigravity.png" width="28" height="28" alt="" loading="lazy"></span><span>Antigravity</span></a></li>
+<li><a class="provider-link" href="https://opencode.ai/"><span class="provider-icon"><img src="assets/providers/opencode.png" width="28" height="28" alt="" loading="lazy"></span><span>OpenCode</span></a></li>
+<li><a class="provider-link" href="https://hermes-agent.nousresearch.com/"><span class="provider-icon"><img src="assets/providers/hermes.png" width="28" height="28" alt="" loading="lazy"></span><span>Hermes Agent</span></a></li>
+<li><a class="provider-link" href="https://cursor.com/"><span class="provider-icon"><img src="assets/providers/cursor.png" width="28" height="28" alt="" loading="lazy"></span><span>Cursor</span></a></li>
+<li><a class="provider-link" href="https://x.ai/build"><span class="provider-icon"><img src="assets/providers/grok.png" width="28" height="28" alt="" loading="lazy"></span><span>Grok CLI</span></a></li>
+<li><a class="provider-link" href="https://github.com/features/copilot/cli"><span class="provider-icon"><img src="assets/providers/copilot.svg" width="28" height="28" alt="" loading="lazy"></span><span>Copilot CLI</span></a></li>
+<li><a class="provider-link" href="https://kiro.dev/cli/"><span class="provider-icon"><img src="assets/providers/kiro.png" width="28" height="28" alt="" loading="lazy"></span><span>Kiro CLI</span></a></li>
+<li><a class="provider-link" href="https://pi.dev/"><span class="provider-icon"><img src="assets/providers/pi.svg" width="28" height="28" alt="" loading="lazy"></span><span>Pi Agent</span></a></li>
+<li><a class="provider-link" href="https://omp.sh/"><span class="provider-icon"><img src="assets/providers/omp.svg" width="28" height="28" alt="" loading="lazy"></span><span>omp</span></a></li>
+<li><a class="provider-link" href="https://aside.com/"><span class="provider-icon"><img src="assets/providers/aside.png" width="28" height="28" alt="" loading="lazy"></span><span>Aside</span></a></li>
+</ul></div></section>
+<section class="section faq"><div class="wrap faq-layout"><h2 data-i18n="faq.title" >A few good questions.</h2><div><details><summary><span data-i18n="faq.free.q" >Is it free?</span></summary><div class="details-body"><p data-i18n="faq.free.a" >Yes. PokeTokenBar is a free, open-source fan project. Shop items use the tokens you’ve already spent on coding, not real-money purchases.</p></div></details><details><summary><span data-i18n="faq.privacy.q" >Does it upload my usage logs?</span></summary><div class="details-body"><p data-i18n="faq.privacy.a" >No. Usage logs stay on your Mac. The app still uses the network for provider usage and limits, Pokémon data and sprites, service status and updates. It is not a fully offline app.</p></div></details><details><summary><span data-i18n="faq.cost.q" >Does raising a Pokémon spend extra tokens?</span></summary><div class="details-body"><p data-i18n="faq.cost.a" >No. The app reads usage from your supported coding tools. It doesn’t run model turns to grow your companion.</p></div></details><details><summary><span data-i18n="faq.source.q" >Can I build it myself?</span></summary><div class="details-body"><p data-i18n="faq.source.a" >Yes. The Swift source, build instructions and issue tracker are on GitHub.</p><a class="text-link" href="https://github.com/chattymin/PokeTokenBar" target="_blank" rel="noopener">GitHub</a></div></details></div></div></section>
+</main><footer class="site-footer"><div class="wrap"><div class="footer-top"><a class="brand" href="#top"><img src="assets/icon.png" width="32" height="32" alt=""><span>PokeTokenBar</span></a><nav class="footer-links" data-i18n-aria="aria.project" aria-label="Project links"><a data-i18n="footer.source" href="https://github.com/chattymin/PokeTokenBar" target="_blank" rel="noopener">Source code</a><a data-i18n="footer.releases" href="https://github.com/chattymin/PokeTokenBar/releases" target="_blank" rel="noopener">Release notes</a><a data-i18n="footer.help" href="https://github.com/chattymin/PokeTokenBar/issues" target="_blank" rel="noopener">Get help</a><a data-i18n="footer.sponsor" href="https://github.com/sponsors/chattymin" target="_blank" rel="noopener">Sponsor</a></nav></div><p data-i18n="foot.disclaimer" class="disclaimer">Pokémon data &amp; sprites by PokéAPI. This is an unofficial, non-commercial fan project. It is not affiliated with, endorsed, sponsored, or approved by Nintendo, Game Freak, or The Pokémon Company. Pokémon and Pokémon character names are trademarks of Nintendo; names, data, and sprites are © Nintendo / Game Freak / The Pokémon Company, used at runtime for identification only. The MIT license covers this project&#x27;s source code only.</p></div></footer>
+<script src="app.js" defer></script>
+</body></html>

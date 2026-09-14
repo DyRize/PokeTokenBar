@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-14T02:28:57.753387+00:00",
+  "title": "Design System: PokeTokenBar",
+  "extensions": {
+    "shadows": [
+      {
+        "name": "product",
+        "value": "0 20px 44px var(--color-shadow)",
+        "purpose": "Hero and collection illustrations."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact",
+        "value": "1000px"
+      },
+      {
+        "name": "stack",
+        "value": "760px"
+      },
+      {
+        "name": "narrow",
+        "value": "380px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Implemented action variant.",
+      "html": "<button class=\"ds-btn-primary\">Get PokeTokenBar</button>",
+      "css": ".ds-btn-primary {display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:12px 22px;border:1px solid transparent;border-radius:var(--radius-control);font-family:var(--font-body);font-size:16px;font-weight:600;line-height:1.4;text-decoration:none;background:var(--color-accent);color:var(--color-on-accent);} .ds-btn-primary:hover {background:var(--color-accent-hover);} .ds-btn-primary:focus-visible { outline:3px solid var(--color-focus); outline-offset:4px; } .ds-btn-primary:active {transform:translateY(1px)} @media(prefers-reduced-motion:reduce){.ds-btn-primary:active{transform:none}}"
+    },
+    {
+      "name": "Secondary button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Implemented action variant.",
+      "html": "<button class=\"ds-btn-secondary\">Get PokeTokenBar</button>",
+      "css": ".ds-btn-secondary {display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:12px 22px;border:1px solid transparent;border-radius:var(--radius-control);font-family:var(--font-body);font-size:16px;font-weight:600;line-height:1.4;text-decoration:none;background:var(--color-surface);color:var(--color-ink);border-color:var(--color-rule);} .ds-btn-secondary:hover {border-color:var(--color-ink);} .ds-btn-secondary:focus-visible { outline:3px solid var(--color-focus); outline-offset:4px; } .ds-btn-secondary:active {transform:translateY(1px)} @media(prefers-reduced-motion:reduce){.ds-btn-secondary:active{transform:none}}"
+    },
+    {
+      "name": "Calculator select",
+      "kind": "input",
+      "description": "Native selection control.",
+      "html": "<label class=\"ds-label\">Daily tokens<select class=\"ds-select\"><option>Steady · 40M/day</option><option>Heavy · 120M/day</option></select></label>",
+      "css": ".ds-label{display:grid;gap:6px;font-family:var(--font-body);font-size:.9375rem;color:var(--color-ink)} .ds-select{font:inherit;border:1px solid var(--color-rule);border-radius:var(--radius-control);color:var(--color-ink);background:var(--color-surface);min-height:44px;padding:8px 12px;max-width:100%;cursor:pointer}.ds-select:focus-visible { outline:3px solid var(--color-focus); outline-offset:4px; }"
+    },
+    {
+      "name": "Navigation links",
+      "kind": "nav",
+      "description": "Compact text links.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#features\">The app</a><a href=\"#guide\">Field guide</a><a href=\"#install\">Install</a></nav>",
+      "css": ".ds-nav{display:flex;align-items:center;gap:var(--space-lg);font-family:var(--font-body)}.ds-nav a{display:inline-flex;align-items:center;min-height:44px;color:var(--color-muted);text-decoration:none;white-space:nowrap}.ds-nav a:hover{color:var(--color-accent)}.ds-nav a:focus-visible { outline:3px solid var(--color-focus); outline-offset:4px; }"
+    },
+    {
+      "name": "Detail disclosure",
+      "kind": "custom",
+      "description": "Native progressive disclosure.",
+      "html": "<details class=\"ds-details\"><summary>Explore the details</summary><p>Today’s usage and provider limits.</p></details>",
+      "css": ".ds-details{font-family:var(--font-body);color:var(--color-ink);border-block:1px solid var(--color-rule)}.ds-details summary{min-height:64px;padding-block:var(--space-sm);font-weight:600;cursor:pointer}.ds-details summary:focus-visible { outline:3px solid var(--color-focus); outline-offset:4px; } .ds-details p{padding-bottom:var(--space-xl);color:var(--color-muted)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "A quiet desktop companion showcase",
+    "overview": "A neutral canvas gives the red identity and existing product illustrations room to carry the personality. Rounded display lettering adds playfulness; multilingual system body type keeps instructions readable. This records the implemented website, not an approved generated comp.",
+    "keyCharacteristics": [
+      "Neutral page with a bounded red-tinted product stage.",
+      "Compact controls, generous section spacing and native disclosures.",
+      "Light and dark theme tokens with visible keyboard focus."
+    ],
+    "rules": [
+      {
+        "name": "The Bounded Stage Rule",
+        "body": "Keep the warm hero stage bounded by the surrounding neutral canvas.",
+        "section": "colors"
+      },
+      {
+        "name": "The Product Depth Rule",
+        "body": "Reserve the ambient product shadow for the illustrated product, as implemented.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use the semantic tokens in tokens.css for both themes.",
+      "Do preserve readable example-screen captions and multilingual wrapping.",
+      "Do keep keyboard focus visible and animation explicitly user-controlled."
+    ],
+    "donts": [
+      "Don't introduce gradients, glow or simulated operating-system chrome.",
+      "Don't turn every section into a raised card."
+    ]
+  }
+}
