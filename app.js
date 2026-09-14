@@ -6,7 +6,7 @@ const I18N = {
     "f14.t": "Growth at your pace",
     "f14.d": "Set difficulty from 10% to 200% and apply it with Save. Your earned progress is preserved. Hatches from a previously graduated base species grow twice as fast.",
     "f15.t": "Individual Pokémon profiles",
-    "f15.d": "Explore persistent individual values, abilities and moves in Pokémon details. Localized names appear without a brief English flash.",
+    "f15.d": "Get to know each Pokémon’s individual values, ability and moves in its profile.",
     "nav.features": "The app",
     "nav.install": "Install",
     "hero.h1a": "Your tokens.",
@@ -24,7 +24,7 @@ const I18N = {
     "f6.t": "Notifications",
     "f6.d": "Choose alerts for approaching usage limits, hatching, evolution and graduation.",
     "f7.t": "Token Shop",
-    "f7.d": "Spend previously used tokens on Rare Candy, nature-changing Mints, a Shiny Charm or a new egg. Some eggs guarantee an Uncommon or Rare partner.",
+    "f7.d": "Use tokens you’ve already spent to get Rare Candy, nature-changing Mints, a Shiny Charm or a new egg.",
     "f9.t": "Representative Pokémon",
     "f9.d": "Pin an owned species to the menu bar and desktop pet. Your current partner keeps growing in Home.",
     "f10.t": "Additional scan folders",
@@ -118,6 +118,19 @@ const I18N = {
     "usage.limits": "See the reset coming",
     "usage.limitsDesc": "Official limits for Claude, Codex and Antigravity, with reset timing and optional notifications.",
     "usage.caption": "Daily trends and official usage limits. Example screens.",
+    "growth.title": "Your coding grows a Pokémon.",
+    "growth.play": "Play animation",
+    "growth.pause": "Pause animation",
+    "growth.desc": "The tokens you use with AI coding tools hatch an egg and grow your partner. Keep coding, watch it evolve, and keep each graduated Pokémon in your collection.",
+    "growth.egg": "Start with an egg",
+    "growth.eggDesc": "Your first tokens bring you closer to hatching.",
+    "growth.first": "Meet your partner",
+    "growth.firstDesc": "An egg hatches into a surprise Pokémon.",
+    "growth.evolve": "Code. Grow. Evolve.",
+    "growth.evolveDesc": "Used tokens advance its evolution line.",
+    "growth.collect": "Keep it in your Pokédex",
+    "growth.collectDesc": "Graduate your partner and welcome a new egg.",
+    "growth.note": "Illustration: Bulbasaur’s evolution line. Your partner and growth pace vary. No extra AI requests are made to grow a Pokémon.",
     "features.more": "Explore the details",
     "comp.title": "A workday,\nwith a side quest.",
     "comp.desc": "Your existing token usage raises a partner through its real evolution line. Then a new egg arrives, and the collection grows.",
@@ -169,7 +182,7 @@ const I18N = {
     "f14.t": "내 속도에 맞는 성장",
     "f14.d": "난이도를 10%~200%로 조절하고 저장을 눌러 적용하세요. 이미 쌓은 성장 진행률은 유지됩니다. 졸업한 기본 종이 다시 부화하면 2배로 성장합니다.",
     "f15.t": "포켓몬 개체별 상세",
-    "f15.d": "유지되는 개체값과 특성·기술을 상세 화면에서 확인하세요. 번역을 불러올 때 영어가 잠깐 나타나는 현상도 없앴습니다.",
+    "f15.d": "포켓몬마다 다른 개체값과 특성, 기술을 상세 화면에서 살펴보세요.",
     "nav.features": "앱 둘러보기",
     "nav.install": "설치",
     "hero.h1a": "당신의 토큰이,",
@@ -187,7 +200,7 @@ const I18N = {
     "f6.t": "알림",
     "f6.d": "한도가 경고·임박 기준을 넘거나, 파트너가 부화·진화·졸업할 때 알려줘요.",
     "f7.t": "토큰 상점",
-    "f7.d": "사용한 토큰이 곧 재화가 돼요 — 이상한 사탕으로 포켓몬을 키우거나, 민트로 성격을 다시 굴리거나, 이로치 부적으로 이로치 확률을 영구히 올리거나, 알로 지금 포켓몬을 놓아주고 새로 시작하세요 — 보증 없는 알·고급 이상 확정·희귀 이상 확정 세 종류예요.",
+    "f7.d": "이미 사용한 토큰으로 이상한 사탕, 성격을 바꾸는 민트, 이로치 부적이나 새 알을 얻으세요.",
     "f9.t": "대표 포켓몬",
     "f9.d": "도감에서 이미 가진 종을 골라 메뉴바와 플로팅 펫에 고정할 수 있어요 — 키우는 포켓몬과 별개예요. 고정 중엔 메뉴바가 알·부화·진화를 따라가지 않고, 육성 진행은 홈에서 그대로 봅니다.",
     "f10.t": "추가 스캔 폴더",
@@ -293,6 +306,19 @@ const I18N = {
     "comp.caption": "함께한 파트너가 쌓이는 도감. 예시 화면.",
     "pet.title": "바탕화면에서도 함께.",
     "pet.desc": "파트너를 메뉴바 밖으로 꺼내보세요. 원하는 곳으로 옮기고, 마우스를 올려 사용량을 확인하고, 클릭해서 앱을 여세요.",
+    "growth.title": "코딩한 만큼, 포켓몬도 자라요.",
+    "growth.play": "애니메이션 재생",
+    "growth.pause": "애니메이션 일시정지",
+    "growth.desc": "AI 도구로 코딩하며 쓴 토큰이 알을 깨우고, 포켓몬을 키워요. 토큰이 쌓이면 진화하고, 끝까지 키운 파트너는 도감에 남아요.",
+    "growth.egg": "알에서 시작해요",
+    "growth.eggDesc": "첫 토큰부터 부화에 가까워져요.",
+    "growth.first": "첫 포켓몬을 만나요",
+    "growth.firstDesc": "알이 부화하면 새로운 파트너를 만나요.",
+    "growth.evolve": "함께 코딩하고, 진화해요",
+    "growth.evolveDesc": "사용한 토큰이 쌓여 다음 모습으로 진화해요.",
+    "growth.collect": "도감에 남기고, 다시 시작해요",
+    "growth.collectDesc": "끝까지 키우면 도감에 남고 새 알이 찾아와요.",
+    "growth.note": "이상해씨 진화 라인 예시예요. 만나는 포켓몬과 성장 속도는 달라질 수 있어요. 포켓몬을 키우기 위해 AI를 추가로 호출하지 않아요.",
     "guide.title": "얼마나 쓰면 자랄까요?",
     "guide.desc": "내 사용 속도로 계산하고, 진화 비용과 수집 요소를 확인하세요. 필요한 토큰이 부담스럽다면 앱에서 난이도를 낮춰 더 적은 토큰으로 키울 수 있어요.",
     "guide.open": "성장 가이드 펼치기",
@@ -332,7 +358,7 @@ const I18N = {
     "f14.t": "自分のペースで育成",
     "f14.d": "難易度を10%〜200%で調整し、保存して適用。獲得済みの育成進捗は維持されます。卒業済みの基本種が再び孵化すると2倍で成長します。",
     "f15.t": "ポケモンごとの詳細",
-    "f15.d": "保存される個体値や特性・技を詳細画面で確認。翻訳の読み込み中に英語が一瞬表示される現象も解消しました。",
+    "f15.d": "ポケモンごとの個体値、特性、技を詳細画面で見てみましょう。",
     "nav.features": "アプリを見る",
     "nav.install": "インストール",
     "hero.h1a": "あなたのトークンが、",
@@ -350,7 +376,7 @@ const I18N = {
     "f6.t": "通知",
     "f6.d": "上限が警告・危険のラインを超えたとき、そしてパートナーが孵化・進化・卒業したときにお知らせします。",
     "f7.t": "トークンショップ",
-    "f7.d": "使ったトークンがそのまま通貨に — ふしぎなアメで育てたり、ミントでせいかくを引き直したり、光るお守りで色違い確率を永続的に上げたり、タマゴで今のパートナーを手放してやり直したりできます — 保証なし・アンコモン以上確定・レア以上確定の3種類。",
+    "f7.d": "使ったトークンで、ふしぎなアメ、せいかくを変えるミント、色違いのお守り、新しいタマゴを手に入れましょう。",
     "f9.t": "代表ポケモン",
     "f9.d": "図鑑で所有している種を選び、育成中のポケモンとは別にメニューバーとフローティングペットへ固定できます — 固定中はメニューバーがタマゴ・孵化・進化を追わなくなり、育成の進行は Home で確認できます。",
     "f10.t": "追加スキャンフォルダ",
@@ -456,6 +482,19 @@ const I18N = {
     "comp.caption": "パートナーとの記録が増えていく図鑑。画面例。",
     "pet.title": "デスクトップでも、一緒。",
     "pet.desc": "メニューバーからパートナーを連れ出しましょう。好きな場所へドラッグし、ホバーで使用量を確認、クリックでアプリを開けます。",
+    "growth.title": "コードを書くほど、ポケモンが育つ。",
+    "growth.play": "アニメーションを再生",
+    "growth.pause": "アニメーションを一時停止",
+    "growth.desc": "AIツールでコードを書くと、そのトークンでタマゴが孵り、ポケモンが育ちます。使うほど進化し、育て上げたパートナーは図鑑に残ります。",
+    "growth.egg": "タマゴから始まる",
+    "growth.eggDesc": "最初のトークンから孵化へ近づきます。",
+    "growth.first": "パートナーと出会う",
+    "growth.firstDesc": "孵ったタマゴから新しい仲間が。",
+    "growth.evolve": "コードを書いて、進化する",
+    "growth.evolveDesc": "使ったトークンが次の姿へ育てます。",
+    "growth.collect": "図鑑に残して、次の出会いへ",
+    "growth.collectDesc": "育て上げた仲間は図鑑へ。次は新しいタマゴ。",
+    "growth.note": "フシギダネの進化例です。出会うポケモンや成長の速さは異なります。育成のために追加のAIリクエストは行いません。",
     "guide.title": "どれくらいで育つ？",
     "guide.desc": "自分のペースで計算して、進化コストや集められるものを確認しましょう。必要なトークンが多すぎると感じたら、アプリで難易度を下げて、少ないトークンで育てられます。",
     "guide.open": "育成ガイドを開く",
@@ -517,6 +556,7 @@ function applyLanguage(value) {
   document.querySelectorAll('[data-i18n-aria]').forEach(el => el.setAttribute('aria-label', translated(el.dataset.i18nAria)));
   document.querySelectorAll('[data-i18n-alt]').forEach(el => el.setAttribute('alt', translated(el.dataset.i18nAlt)));
   syncDemoLabel();
+  syncGrowthLabel();
   document.title = 'PokeTokenBar — ' + translated('hero.h1a') + ' ' + translated('hero.h1b');
   document.querySelector('meta[name="description"]').content = translated('hero.lead');
   copyStatus.textContent = copyState ? translated('copy.' + copyState) : '';
@@ -639,6 +679,21 @@ function setDemoPlaying(playing) {
 demoButton.addEventListener('click', () => setDemoPlaying(demoButton.getAttribute('aria-pressed') !== 'true'));
 matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', event => { if(event.matches) setDemoPlaying(false); });
 
+const growthMotionButton = document.getElementById('growth-motion');
+const growthMotionPreference = matchMedia('(prefers-reduced-motion: reduce)');
+function syncGrowthLabel() {
+  growthMotionButton.querySelector('span').textContent = translated(growthMotionButton.getAttribute('aria-pressed') === 'true' ? 'growth.pause' : 'growth.play');
+}
+function setGrowthPlaying(playing) {
+  growthMotionButton.setAttribute('aria-pressed', String(playing));
+  document.querySelectorAll('[data-growth-sprite]').forEach(img => {
+    img.src = `assets/growth/${img.dataset.growthSprite}.${playing ? 'gif' : 'png'}`;
+  });
+  syncGrowthLabel();
+}
+growthMotionButton.addEventListener('click', () => setGrowthPlaying(growthMotionButton.getAttribute('aria-pressed') !== 'true'));
+growthMotionPreference.addEventListener('change', event => { if (event.matches) setGrowthPlaying(false); });
+
 let initialLanguage = navigator.language.slice(0,2);
 try { initialLanguage = localStorage.getItem('ptb-lang') || initialLanguage; } catch (_) {}
 applyLanguage(initialLanguage);
@@ -646,3 +701,5 @@ applyTheme(root.dataset.theme === 'dark' ? 'dark' : 'light');
 selectTab(tabs[0]);
 // Keep baseline content available if script initialization fails or JavaScript is disabled.
 root.classList.add('js');
+
+setGrowthPlaying(!growthMotionPreference.matches);
