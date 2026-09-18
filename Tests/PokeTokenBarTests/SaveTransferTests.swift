@@ -530,7 +530,9 @@ final class SaveTransferTests: XCTestCase {
         let progress: Set<String> = ["usedSinceInstall", "spentTokens", "eggUsage", "eggTier",
                                      "pendingHatchID", "pendingUnownForm", "active",
                                      "representativeSpeciesID", "representativeUnownForm", "dex",
-                                     "collectedFinals", "inventory"]
+                                     "collectedFinals", "inventory",
+                                     // The trainer card belongs to the player, like the representative pick.
+                                     "teamEntryIDs", "teamIsAutomatic", "trainerID", "trainerName"]
         let deviceLedger: Set<String> = ["installBaselineSet", "claimedTodayTokensByProvider", "lastDate"]
         let accountLedger: Set<String> = ["candyGrantTier", "candyFeatureSeeded"]
         let devicePreference: Set<String> = ["language"]
