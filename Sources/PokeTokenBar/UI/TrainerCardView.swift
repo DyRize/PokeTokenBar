@@ -49,6 +49,7 @@ struct TrainerCardContent {
     let companionShiny: Bool
     let companionName: String
     let companionDetail: String
+    let companionUnownForm: UnownForm?
     let types: [String]
     let team: [TrainerCardMember]
     let teamPicked: Bool
@@ -66,10 +67,13 @@ struct TrainerCardContent {
         companionShiny = subject.isShiny
         companionName = subject.name
         companionDetail = subject.detail
+        companionUnownForm = subject.unownForm
         types = subject.speciesID.flatMap { store.pokemonDetailsByID[$0]?.types } ?? []
         team = store.trainerTeam.map { entry in
-            TrainerCardMember(entry: entry,
-                              name: store.dexStoredChainNames(entry)?[entry.finalID] ?? "#\(entry.finalID)")
+            let name = store.dexStoredChainNames(entry)?[entry.finalID] ?? "#\(entry.finalID)"
+            return TrainerCardMember(entry: entry,
+                                     name: UnownForm.displayName(name, speciesID: entry.finalID,
+                                                                 form: entry.unownForm))
         }
         teamPicked = store.isTeamPicked
     }
@@ -210,7 +214,7 @@ struct TrainerCardFront: View {
                 Circle().fill(Color(nsColor: accent).opacity(0.14))
                 Circle().strokeBorder(Color(nsColor: accent).opacity(0.5), lineWidth: 1.5)
                 SpriteView(speciesID: content.companionSpeciesID, size: 54, animated: true,
-                           shiny: content.companionShiny)
+                           shiny: content.companionShiny, unownForm: content.companionUnownForm)
             }
             .frame(width: 70, height: 70)
             HStack(spacing: 2) {
@@ -323,7 +327,7 @@ struct TrainerCardBack: View {
                 shape.strokeBorder(rarityColor(member.entry.rarity), lineWidth: 1.5)
                 VStack(spacing: 0) {
                     SpriteView(speciesID: member.entry.finalID, size: 36, animated: true,
-                               shiny: member.entry.isShiny)
+                               shiny: member.entry.isShiny, unownForm: member.entry.unownForm)
                     Text(member.name)
                         .font(.system(size: 9, weight: .bold, design: .rounded))
                         .foregroundStyle(TrainerCardStyle.ink)
@@ -541,10 +545,13 @@ private struct TrainerTeamPicker: View {
 
     private func row(_ entry: DexEntry) -> some View {
         HStack(spacing: 8) {
-            SpriteView(speciesID: entry.finalID, size: 36, shiny: entry.isShiny)
+            SpriteView(speciesID: entry.finalID, size: 36, shiny: entry.isShiny,
+                       unownForm: entry.unownForm)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 4) {
-                    Text(store.dexStoredChainNames(entry)?[entry.finalID] ?? "#\(entry.finalID)")
+                    Text(UnownForm.displayName(store.dexStoredChainNames(entry)?[entry.finalID]
+                                                    ?? "#\(entry.finalID)",
+                                               speciesID: entry.finalID, form: entry.unownForm))
                         .font(.callout.weight(.semibold))
                     if entry.isShiny { Text("✨").font(.system(size: 10)) }
                 }

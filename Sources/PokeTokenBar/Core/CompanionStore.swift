@@ -1749,6 +1749,7 @@ final class CompanionStore {
         let isShiny: Bool
         let name: String
         let detail: String
+        var unownForm: UnownForm? = nil
     }
 
     var cardSubject: TrainerCardSubject {
@@ -1757,12 +1758,18 @@ final class CompanionStore {
             let detail = ([stageText] + [currentNature?.name(state.language)].compactMap { $0 })
                 .filter { !$0.isEmpty }.joined(separator: " · ")
             return TrainerCardSubject(speciesID: subject.speciesID, isShiny: subject.isShiny,
-                                      name: displayName, detail: detail)
+                                      name: displayName, detail: detail,
+                                      unownForm: subject.unownForm)
         }
+        // The main Pokédex aggregates the Unown forms, so the pinned letter only reaches the card
+        // through the representative subject: without it the frame prints another letter's sprite.
         let species = dexSpecies.first { $0.id == pinned }
         return TrainerCardSubject(speciesID: pinned, isShiny: subject.isShiny,
-                                  name: species?.name ?? "#\(pinned)",
-                                  detail: species.map { l.rarityLabel($0.rarity) } ?? "")
+                                  name: UnownForm.displayName(species?.name ?? "#\(pinned)",
+                                                              speciesID: pinned,
+                                                              form: subject.unownForm),
+                                  detail: species.map { l.rarityLabel($0.rarity) } ?? "",
+                                  unownForm: subject.unownForm)
     }
 
     var trainerID: Int? { state.trainerID }

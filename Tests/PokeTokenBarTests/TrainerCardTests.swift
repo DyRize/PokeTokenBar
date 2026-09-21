@@ -338,6 +338,23 @@ final class TrainerCardTests: XCTestCase {
                        "a pin is a species, so the raised individual's stage and nature are dropped")
     }
 
+    func testTheCardCarriesTheUnownLetter() throws {
+        let unown = DexEntry(id: "unown-q", baseID: UnownForm.speciesID, finalID: UnownForm.speciesID,
+                             chainOrder: [UnownForm.speciesID], rarity: .rare, caughtAt: cardNow,
+                             names: [UnownForm.speciesID: ["en": "Unown"]], unownForm: .q)
+        let s = try store(dex: eightGraduates + [unown])
+
+        XCTAssertTrue(s.setRepresentativeSpeciesID(UnownForm.speciesID, unownForm: .q))
+        let pinned = s.cardSubject
+        XCTAssertEqual(pinned.unownForm, .q, "the frame would otherwise draw the default A sprite")
+        XCTAssertEqual(pinned.name, "Unown [Q]")
+
+        let member = try XCTUnwrap(TrainerCardContent(store: s, showsTokens: true).team
+            .first { $0.entry.id == "unown-q" })
+        XCTAssertEqual(member.name, "Unown [Q]", "team slots name the letter like the catch log")
+        XCTAssertEqual(member.entry.unownForm, .q)
+    }
+
     func testAPinnedPokemonKeepsTheCardOffTheEgg() throws {
         let s = try store(dex: eightGraduates)   // no active Pokémon: an egg is incubating
         XCTAssertEqual(s.cardSubject.name, "Token Egg")
